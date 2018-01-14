@@ -2,7 +2,7 @@
 <Project>
 <ProjectName>F:\Git\scorbot\firmware\\firmware</ProjectName>
 <CMSIS>..\Drivers\CMSIS</CMSIS>
-<HAL_Driver>C:\Users\jay\STM32Cube\Repository\STM32Cube_FW_F4_V1.17.0\Drivers\CMSIS</HAL_Driver>
+<HAL_Driver>C:\Users\jay\STM32Cube\Repository\STM32Cube_FW_F4_V1.18.0\Drivers\CMSIS</HAL_Driver>
 
 <Toolchain>SW4STM32</Toolchain>
 <Version>0</Version>
@@ -23,27 +23,27 @@
 <configs>
   <config>
     <name>firmware</name>				
-    <device>STM32F446VETx</device>		 
-    <heapSize>0x200</heapSize>
-    <stackSize>0x400</stackSize>
+    <device>STM32F407VETx</device>		 
+    <heapSize>0x400</heapSize>
+    <stackSize>0x600</stackSize>
     
     	<board>custom</board>
 			
     <usedDebug>true</usedDebug>
     	<debugprobe>swd</debugprobe>
     <optimization>6</optimization>
-    <icfloc>1</icfloc>
+    <icfloc>0</icfloc>
     <Adefines>
         <define></define>
     </Adefines>   
 
-    <UsedFreeRTOS></UsedFreeRTOS>
+    <UsedFreeRTOS>true</UsedFreeRTOS>
     <Aincludes>
-
-
-	    	<include></include>
+		   		<include></include>
     </Aincludes>
     <Cdefines>
+        <define>_TIMEVAL_DEFINED</define>
+        <define>_SYS_TIME_H_</define>
         <define>__weak=__attribute__((weak))</define>
         <define>__packed=__attribute__((__packed__))</define>
     </Cdefines>
@@ -54,16 +54,30 @@
         <Cdefines>
             <define>USE_FULL_LL_DRIVER</define>
             <define>MBEDTLS_CONFIG_FILE=&quot;mbedtls_config.h&quot;</define>
-            <define>_TIMEVAL_DEFINED</define>
-            <define>_SYS_TIME_H_</define>
         </Cdefines>         
     </definestoremove>
     
 	<Cincludes>
 	   <include>..\Inc</include>
+	   <include>..\Middlewares\Third_Party\LwIP\src\include</include>
+	   <include>..\Middlewares\Third_Party\LwIP\system</include>
 	   <include>..\Drivers\STM32F4xx_HAL_Driver\Inc</include>
 	   <include>..\Drivers\STM32F4xx_HAL_Driver\Inc\Legacy</include>
+	   <include>..\Middlewares\Third_Party\FreeRTOS\Source\portable\GCC\ARM_CM4F</include>
+	   <include>..\Middlewares\Third_Party\LwIP\src\include\netif\ppp</include>
+	   <include>..\Middlewares\ST\STM32_USB_Device_Library\Core\Inc</include>
+	   <include>..\Middlewares\ST\STM32_USB_Device_Library\Class\HID\Inc</include>
 	   <include>..\Drivers\CMSIS\Device\ST\STM32F4xx\Include</include>
+	   <include>..\Middlewares\Third_Party\FreeRTOS\Source\include</include>
+	   <include>..\Middlewares\Third_Party\FreeRTOS\Source\CMSIS_RTOS</include>
+	   <include>..\Middlewares\Third_Party\LwIP\src\include\lwip</include>
+	   <include>..\Middlewares\Third_Party\LwIP\src\include\lwip\apps</include>
+	   <include>..\Middlewares\Third_Party\LwIP\src\include\lwip\priv</include>
+	   <include>..\Middlewares\Third_Party\LwIP\src\include\lwip\prot</include>
+	   <include>..\Middlewares\Third_Party\LwIP\src\include\netif</include>
+	   <include>..\Middlewares\Third_Party\LwIP\src\include\posix</include>
+	   <include>..\Middlewares\Third_Party\LwIP\src\include\posix\sys</include>
+	   <include>..\Middlewares\Third_Party\LwIP\system\arch</include>
 	   <include>..\Drivers\CMSIS\Include</include>
 
     </Cincludes>
@@ -82,6 +96,9 @@
 		    	<sourceEntry>
 		    		<name>Drivers</name>
 		    	</sourceEntry>
+		    		<sourceEntry>
+		    			<name>Middlewares</name>
+		    		</sourceEntry>
 		    </sourceEntries>
 
 </Project>

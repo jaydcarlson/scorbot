@@ -14,6 +14,6 @@
     <name>firmware</name>
     <dbgIF>SWD</dbgIF>
     <dbgDEV>ST-Link</dbgDEV>
-    <mcuId>stm32f446vetx</mcuId>
+    <mcuId>stm32f407vetx</mcuId>
   </board>
 </targetDefinitions>
