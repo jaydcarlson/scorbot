@@ -171,19 +171,12 @@ int busy = 0;
 
 int _write(int file, char *ptr, int len)
 {
-//	if(busy)
-//		return 0;
-
-//	busy = 1;
+//	return len;
 	for(int i=0;i<len;i++)
 	{
 		huart2.Instance->DR = ptr[i];
 		while((huart2.Instance->SR & USART_SR_TXE) == 0);
 	}
-//	busy = 0;
-
-//
-//		HAL_UART_Transmit(&huart2, (uint8_t*)&ptr[i], 1, 1000);
 
 	return len;
 }
