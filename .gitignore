@@ -1,6 +1,11 @@
 
 pcb/__Previews/
 
-pcb/Project Logs for scorbot/
+Project Logs for */
+Project outputs for */
 
 *.PrjPcbStructure
+
+pcb/History/
+
+*.err
