@@ -204,6 +204,7 @@ msg_generate_packet_id(mqtt_client_t *client)
 
 #define mqtt_ringbuf_advance_get_idx(rb, len) ((rb)->get += (len))
 
+char temp_topic[64];
 
 /**
  * Try send as many bytes as possible from output ring buffer
@@ -743,24 +744,28 @@ static mqtt_connection_status_t
       } else {
         client->inpub_pkt_id = 0;
       }
-      /* Take backup of byte after topic */
-      bkp = topic[topic_len];
+      if(topic_len > sizeof(temp_topic)-2)
+    	  topic_len = sizeof(temp_topic)-2;
+
+      memcpy(temp_topic, topic, topic_len);
       /* Zero terminate string */
-      topic[topic_len] = 0;
+      temp_topic[topic_len] = 0;
+
       /* Payload data remaining in receive buffer */
       payload_length = length - after_topic;
       payload_offset = after_topic;
 
+      /* Zero terminate string */
+      var_hdr_payload[payload_offset+payload_length] = 0;
+
       LWIP_DEBUGF(MQTT_DEBUG_TRACE,("mqtt_incomming_publish: Received message with QoS %d at topic: %s, payload length %d\n",
                                     qos, topic, remaining_length + payload_length));
       if (client->pub_cb != NULL) {
-        client->pub_cb(client->inpub_arg, (const char *)topic, remaining_length + payload_length);
+        client->pub_cb(client->inpub_arg, (const char *)temp_topic, remaining_length + payload_length, var_hdr_payload + payload_offset, payload_length);
       }
-      /* Restore byte after topic */
-      topic[topic_len] = bkp;
     }
     if (payload_length > 0 || remaining_length == 0) {
-      client->data_cb(client->inpub_arg, var_hdr_payload + payload_offset, payload_length, remaining_length == 0 ? MQTT_DATA_FLAG_LAST : 0);
+//      client->data_cb(client->inpub_arg, var_hdr_payload + payload_offset, payload_length, remaining_length == 0 ? MQTT_DATA_FLAG_LAST : 0);
       /* Reply if QoS > 0 */
       if (remaining_length == 0 && qos > 0) {
         /* Send PUBACK for QoS 1 or PUBREC for QoS 2 */
@@ -1324,11 +1329,9 @@ mqtt_sub_unsub(mqtt_client_t *client, const char *topic, u8_t qos, mqtt_request_
  * @param arg User supplied argument to both callbacks
  */
 void
-mqtt_set_inpub_callback(mqtt_client_t *client, mqtt_incoming_publish_cb_t pub_cb,
-                             mqtt_incoming_data_cb_t data_cb, void *arg)
+mqtt_set_inpub_callback(mqtt_client_t *client, mqtt_incoming_publish_cb_t pub_cb, void *arg)
 {
   LWIP_ASSERT("mqtt_set_inpub_callback: client != NULL", client != NULL);
-  client->data_cb = data_cb;
   client->pub_cb = pub_cb;
   client->inpub_arg = arg;
 }

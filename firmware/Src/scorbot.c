@@ -11,6 +11,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "motor.h"
 
 typedef enum {
   MQTT_STATE_INIT,
@@ -30,7 +31,7 @@ mqtt_client_t mqtt_client;
 ip4_addr_t broker_ip;
 static MQTT_State_t MQTT_state = MQTT_STATE_INIT;
 
-const char *topic = "motors/#";
+const char *topic = "motors/setpoint/#";
 
 // private methods
 static int mqtt_do_connect(mqtt_client_t *client, ip4_addr_t *broker_ipaddr);
@@ -53,44 +54,18 @@ static void my_mqtt_subscribe(mqtt_client_t *client, void *arg) {
   LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("Subscribed to topic \"%s\", res: %d\r\n", topic, (int)err));
 }
 
-static int inpub_id; /* ID of incoming data */
 
-static void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags) {
-  LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("Incoming publish payload with length %d, flags %u\n", len, (unsigned int)flags));
-  if(flags & MQTT_DATA_FLAG_LAST) {
-    /* Last fragment of payload received (or whole part if payload fits receive buffer
-       See MQTT_VAR_HEADER_BUFFER_LEN)  */
-
-    /* Call function or do action depending on reference, in this case inpub_id */
-    if(inpub_id == 0) { /* received message for topic CONFIG_TOPIC_NAME */
-      /* Don't trust the publisher, check zero termination */
-      if(data[len] == '\0') {
-        LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("mqtt_incoming_data_cb: topic \"%s\", value: \"%s\"\n", CONFIG_TOPIC_NAME, (const char *)data));
-
-      }
-    } else if(inpub_id == 1) {
-      /* Call an 'A' function... */
-    } else {
-      LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("mqtt_incoming_data_cb: Ignoring payload...\n"));
-    }
-  } else {
-    /* Handle fragmented payload, store in buffer, write to file or whatever */
+static void mqtt_incoming_publish_cb(void *arg, const char *topic, u32_t topic_len, const u8_t *payload, u16_t payload_len) {
+  LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("Incoming publish at topic \"%s\", data: %s\n", topic, payload));
+  if(strstr(topic, "setpoint") != NULL)
+  {
+	  if(strstr(topic, "/6") != NULL)
+	  {
+		  int newSetpoint = atoi(payload);
+		  motor_set_position(6, newSetpoint);
+		  printf("New setpoint for motor 6: %d\r\n", newSetpoint);
+	  }
   }
-}
-
-static void mqtt_incoming_publish_cb(void *arg, const char *topic, u32_t tot_len) {
-  LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("Incoming publish at topic \"%s\" with total length %u\n", topic, (unsigned int)tot_len));
-//
-//  /* Decode topic string into a user defined reference */
-//  if(strcmp(topic, CONFIG_TOPIC_NAME) == 0) {
-//    inpub_id = 0;
-//  } else if(topic[0] == 'A') {
-//    /* All topics starting with 'A' might be handled at the same way */
-//    inpub_id = 1;
-//  } else {
-//    /* For all other topics */
-//    inpub_id = 2;
-//  }
 }
 
 static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status) {
@@ -100,7 +75,7 @@ static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection
     LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("mqtt_connection_cb: Successfully connected\n"));
 
     /* Setup callback for incoming publish requests */
-    mqtt_set_inpub_callback(client, mqtt_incoming_publish_cb, mqtt_incoming_data_cb, arg);
+    mqtt_set_inpub_callback(client, mqtt_incoming_publish_cb, arg);
 
     my_mqtt_subscribe(client, arg);
   } else {
@@ -229,42 +204,4 @@ void Server_MainTask()
 		MqttDoStateMachine(&mqtt_client, &broker_ip);
 		vTaskDelay(1000);
 	}
-
-
-
-//	 struct netconn *pListeningConnection, *pAcceptedConnection;
-//	  err_t err;
-//
-//	  pListeningConnection = netconn_new(NETCONN_TCP);
-//	  err = netconn_bind(pListeningConnection, IP4_ADDR_ANY, 80);
-//	  netconn_listen ( pListeningConnection );
-//
-//	  /* Infinite loop */
-//	  for(;;)
-//	  {
-//		  err = netconn_accept(pListeningConnection, &pAcceptedConnection);
-//		  if (err == ERR_OK)
-//		  {
-//			  struct netbuf *inbuf = NULL;
-//			  err = netconn_recv(pAcceptedConnection, &inbuf);
-//			  netbuf_delete(inbuf);
-//
-//			  static const char HelloWorld[] =
-//					  "HTTP/1.0 200 OK\r\nContent-Type: text/html\r\n\r\n"
-//					  "<html>"
-//					  "<head>"
-//					  "</head>"
-//					  "<body>"
-//					  "<h1>Hello from scorbot server!</h1>"
-//					  "<p>(and the world's shittiest web server)</p>"
-//					  "</body>"
-//					  "</html>";
-//
-//			  netconn_write(pAcceptedConnection,
-//			  (const unsigned char*)HelloWorld,
-//			  sizeof(HelloWorld),
-//			  0);
-//			  netconn_delete(pAcceptedConnection);
-//		  }
-//	  }
 }

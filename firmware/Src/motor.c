@@ -105,7 +105,7 @@ void motor_control_loop()
 	*(motor->ccr) = (uint16_t)speed_update;
 }
 
-void motor_set_position(motor_t* position)
+void motor_set_position(int number, int position)
 {
-
+	motors[number].setpoint = position;
 }

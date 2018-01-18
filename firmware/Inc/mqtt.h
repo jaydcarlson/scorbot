@@ -138,7 +138,7 @@ typedef void (*mqtt_incoming_data_cb_t)(void *arg, const u8_t *data, u16_t len, 
  * @param topic Zero terminated Topic text string, topic may not be referenced after callback return
  * @param tot_len Total length of publish data, if set to 0 (no publish payload) data callback will not be invoked
  */
-typedef void (*mqtt_incoming_publish_cb_t)(void *arg, const char *topic, u32_t tot_len);
+typedef void (*mqtt_incoming_publish_cb_t)(void *arg, const char *topic, u32_t topic_len, const u8_t *payload, u16_t payload_len);
 
 
 /**
@@ -198,8 +198,6 @@ struct mqtt_client_t
   struct mqtt_request_t *pend_req_queue;
   struct mqtt_request_t req_list[MQTT_REQ_MAX_IN_FLIGHT];
   void *inpub_arg;
-  /** Incoming data callback */
-  mqtt_incoming_data_cb_t data_cb;
   mqtt_incoming_publish_cb_t pub_cb;
   /** Input */
   u32_t msg_idx;
@@ -229,8 +227,7 @@ u8_t
 mqtt_client_is_handshaking(mqtt_client_t *client);
 
 /** Set callback to call for incoming publish */
-void mqtt_set_inpub_callback(mqtt_client_t *client, mqtt_incoming_publish_cb_t,
-                             mqtt_incoming_data_cb_t data_cb, void *arg);
+void mqtt_set_inpub_callback(mqtt_client_t *client, mqtt_incoming_publish_cb_t, void *arg);
 
 /** Common function for subscribe and unsubscribe */
 err_t mqtt_sub_unsub(mqtt_client_t *client, const char *topic, u8_t qos, mqtt_request_cb_t cb, void *arg, u8_t sub);

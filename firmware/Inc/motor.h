@@ -33,6 +33,6 @@ typedef struct motor {
 
 
 void motor_control_loop();
-void motor_set_position(motor_t* position);
+void motor_set_position(int number, int position);
 
 #endif /* MOTOR_H_ */
