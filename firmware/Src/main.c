@@ -54,7 +54,7 @@
 #include "usb_device.h"
 
 /* USER CODE BEGIN Includes */
-#include "lwip/api.h"
+#include "scorbot.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -127,6 +127,7 @@ void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
 #define DHCP_TIMEOUT               4
 #define DHCP_LINK_DOWN             5
 
+
 #define DHCP_TASK_PRIO   ( tskIDLE_PRIORITY + 4 )
 
 uint8_t DHCP_state;
@@ -152,7 +153,7 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-  __HAL_RCC_GPIOB_CLK_ENABLE();
+//  __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, 0);
@@ -213,7 +214,7 @@ GPIO_InitTypeDef GPIO_InitStruct;
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 256);
+  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 512);
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
@@ -1073,36 +1074,7 @@ void StartDefaultTask(void const * argument)
   MX_USB_DEVICE_Init();
 
   /* USER CODE BEGIN 5 */
-  struct netconn *pListeningConnection, *pAcceptedConnection;
-  err_t err;
-
-  pListeningConnection = netconn_new(NETCONN_TCP);
-//  err = netconn_bind(pListeningConnection, IP4_ADDR_ANY, 80);
-  ip_addr_t ip;
-  IP4_ADDR(&ip, 192, 168, 0, 190);
-  err = netconn_connect(pListeningConnection, &ip, 80);
-
-
-
-//  xTaskCreate(LwIP_DHCP_task, (int8_t *) "DHCP", configMINIMAL_STACK_SIZE * 2, NULL,DHCP_TASK_PRIO, NULL);
-  /* Infinite loop */
-  for(;;)
-  {
-//	  err = netconn_accept(pListeningConnection, &pAcceptedConnection);
-//	  if (err == ERR_OK)
-//	  {
-//		  struct netbuf *inbuf = NULL;
-//		  err = netconn_recv(pAcceptedConnection, &inbuf);
-//		  netbuf_delete(inbuf);
-//
-//		  static const char HelloWorld[] = "HTTP/1.0 200 OK\r\nContent-Type: text/html\r\n\r\n<html><body><h1>Hello, World</h1>This message is shown to you by the lwIP example project.</body></html>";
-//		  netconn_write(pAcceptedConnection,
-//		  (const unsigned char*)HelloWorld,
-//		  sizeof(HelloWorld),
-//		  0);
-//		  netconn_delete(pAcceptedConnection);
-//	  }
-  }
+  Server_MainTask();
   /* USER CODE END 5 */ 
 }
 
