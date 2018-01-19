@@ -31,8 +31,6 @@ mqtt_client_t mqtt_client;
 ip4_addr_t broker_ip;
 static MQTT_State_t MQTT_state = MQTT_STATE_INIT;
 
-const char *topic = "motors/setpoint/#";
-
 // private methods
 static int mqtt_do_connect(mqtt_client_t *client, ip4_addr_t *broker_ipaddr);
 
@@ -47,11 +45,15 @@ static void my_mqtt_subscribe(mqtt_client_t *client, void *arg) {
   err_t err;
 
   /* Subscribe to a topic named topic with QoS level 1, call mqtt_sub_request_cb with result */
-  err = mqtt_subscribe(client, topic, 1, mqtt_sub_request_cb, arg);
+  err = mqtt_subscribe(client, "motors/setpoint/#", 1, mqtt_sub_request_cb, arg);
   if(err != ERR_OK) {
     LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("mqtt_subscribe return: %d\n", err));
   }
-  LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("Subscribed to topic \"%s\", res: %d\r\n", topic, (int)err));
+  err = mqtt_subscribe(client, "motors/home/#", 1, mqtt_sub_request_cb, arg);
+  if(err != ERR_OK) {
+    LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("mqtt_subscribe return: %d\n", err));
+  }
+//  LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("Subscribed to topic \"%s\", res: %d\r\n", topic, (int)err));
 }
 
 
@@ -64,6 +66,12 @@ static void mqtt_incoming_publish_cb(void *arg, const char *topic, u32_t topic_l
 		  int newSetpoint = atoi(payload);
 		  motor_set_position(6, newSetpoint);
 		  printf("New setpoint for motor 6: %d\r\n", newSetpoint);
+	  }
+  } else if(strstr(topic, "home") != NULL)
+  {
+	  if(strstr(topic, "/6") != NULL)
+	  {
+		  motor_home(6);
 	  }
   }
 }
