@@ -13,7 +13,6 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 	switch(GPIO_Pin)
 	{
 	case ENC_A_M1_INT:
-	case ENC_B_M1_INT:
 		if(ENC_A_M1_GPIO_Port->IDR & ENC_A_M1_Pin)
 		{
 			if(ENC_B_M1_GPIO_Port->IDR & ENC_B_M1_Pin)
@@ -35,6 +34,99 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 			}
 		}
 		break;
+
+	case ENC_A_M2_INT:
+		if(ENC_A_M2_GPIO_Port->IDR & ENC_A_M2_Pin)
+		{
+			if(ENC_B_M2_GPIO_Port->IDR & ENC_B_M2_Pin)
+			{
+				// backward
+				motor2_encoder--;
+			} else {
+				// forward
+				motor2_encoder++;
+			}
+		} else {
+			if(ENC_B_M2_GPIO_Port->IDR & ENC_B_M2_Pin)
+			{
+				// forward
+				motor2_encoder++;
+			} else {
+				// backward
+				motor2_encoder--;
+			}
+		}
+		break;
+
+	case ENC_A_M3_INT:
+		if(ENC_A_M3_GPIO_Port->IDR & ENC_A_M3_Pin)
+		{
+			if(ENC_B_M3_GPIO_Port->IDR & ENC_B_M3_Pin)
+			{
+				// backward
+				motor3_encoder--;
+			} else {
+				// forward
+				motor3_encoder++;
+			}
+		} else {
+			if(ENC_B_M3_GPIO_Port->IDR & ENC_B_M3_Pin)
+			{
+				// forward
+				motor3_encoder++;
+			} else {
+				// backward
+				motor3_encoder--;
+			}
+		}
+		break;
+
+	case ENC_A_M4_INT:
+		if(ENC_A_M4_GPIO_Port->IDR & ENC_A_M4_Pin)
+		{
+			if(ENC_B_M4_GPIO_Port->IDR & ENC_B_M4_Pin)
+			{
+				// backward
+				motor4_encoder--;
+			} else {
+				// forward
+				motor4_encoder++;
+			}
+		} else {
+			if(ENC_B_M4_GPIO_Port->IDR & ENC_B_M4_Pin)
+			{
+				// forward
+				motor4_encoder++;
+			} else {
+				// backward
+				motor4_encoder--;
+			}
+		}
+		break;
+
+	case ENC_A_M5_INT:
+		if(ENC_A_M5_GPIO_Port->IDR & ENC_A_M5_Pin)
+		{
+			if(ENC_B_M5_GPIO_Port->IDR & ENC_B_M5_Pin)
+			{
+				// backward
+				motor5_encoder--;
+			} else {
+				// forward
+				motor5_encoder++;
+			}
+		} else {
+			if(ENC_B_M5_GPIO_Port->IDR & ENC_B_M5_Pin)
+			{
+				// forward
+				motor5_encoder++;
+			} else {
+				// backward
+				motor5_encoder--;
+			}
+		}
+		break;
+
 
 	case ENC_A_M6_INT:
 		if(ENC_A_M6_GPIO_Port->IDR & ENC_A_M6_Pin)
@@ -58,29 +150,5 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 			}
 		}
 		break;
-
-	case ENC_A_M8_INT:
-	case ENC_B_M8_INT:
-			if(ENC_A_M8_GPIO_Port->IDR & ENC_A_M8_Pin)
-			{
-				if(ENC_B_M8_GPIO_Port->IDR & ENC_B_M8_Pin)
-				{
-					// backward
-					motor8_encoder--;
-				} else {
-					// forward
-					motor8_encoder++;
-				}
-			} else {
-				if(ENC_B_M8_GPIO_Port->IDR & ENC_B_M8_Pin)
-				{
-					// forward
-					motor8_encoder++;
-				} else {
-					// backward
-					motor8_encoder--;
-				}
-			}
-			break;
 	}
 }

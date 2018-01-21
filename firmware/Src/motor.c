@@ -15,7 +15,7 @@ typedef struct motor {
 	volatile GPIO_TypeDef* a_port;
 	volatile GPIO_TypeDef* b_port;
 	volatile GPIO_TypeDef* ms_port;
-	volatile int32_t* current_position;
+	volatile int16_t* current_position;
 	int32_t setpoint;
 	uint16_t a_pin;
 	uint16_t b_pin;
@@ -55,29 +55,30 @@ typedef struct motor {
 #define MOTOR7_PWM_CHANNEL	TIM_CHANNEL_1
 #define MOTOR7_PWM_CCR		CCR1
 
-#define MOTOR8_PWM_TIM 		TIM11
-#define MOTOR8_PWM_CHANNEL	TIM_CHANNEL_1
-#define MOTOR8_PWM_CCR		CCR1
+//#define MOTOR8_PWM_TIM 		TIM11
+//#define MOTOR8_PWM_CHANNEL	TIM_CHANNEL_1
+//#define MOTOR8_PWM_CCR		CCR1
 
 // encoder position counters (hardware or software-based)
-#define MOTOR2_POSITION_TIM	TIM2
-#define MOTOR3_POSITION_TIM	TIM4
-#define MOTOR4_POSITION_TIM	TIM3
-#define MOTOR5_POSITION_TIM	TIM8
-#define MOTOR7_POSITION_TIM	TIM1
+//#define MOTOR2_POSITION_TIM	TIM2
+//#define MOTOR3_POSITION_TIM	TIM4
+//#define MOTOR4_POSITION_TIM	TIM3
+//#define MOTOR5_POSITION_TIM	TIM8
+#define MOTOR7_POSITION_TIM		TIM1
 
 #define MOTOR1_POSITION	&motor1_encoder
-#define MOTOR2_POSITION (int32_t*)&(MOTOR2_POSITION_TIM->CNT)
-#define MOTOR3_POSITION (int32_t*)&(MOTOR3_POSITION_TIM->CNT)
-#define MOTOR4_POSITION (int32_t*)&(MOTOR4_POSITION_TIM->CNT)
-#define MOTOR5_POSITION (int32_t*)&(MOTOR5_POSITION_TIM->CNT)
+#define MOTOR2_POSITION &motor2_encoder
+#define MOTOR3_POSITION &motor3_encoder
+#define MOTOR4_POSITION &motor4_encoder
+#define MOTOR5_POSITION &motor5_encoder
 #define MOTOR6_POSITION &motor6_encoder
-#define MOTOR7_POSITION (int32_t*)&(MOTOR7_POSITION_TIM->CNT)
-#define MOTOR8_POSITION &motor8_encoder
+#define MOTOR7_POSITION (int16_t*)&(MOTOR7_POSITION_TIM->CNT)
+
+//#define MOTOR8_POSITION &motor8_encoder
 
 extern TIM_HandleTypeDef htim6;
 
-motor_t motors[8] = {
+motor_t motors[7] = {
 	// motor 1
 	{
 		.current_position=MOTOR1_POSITION,
@@ -91,7 +92,7 @@ motor_t motors[8] = {
 		.setpoint=0,
 		.mode = MOTOR_MODE_RUNNING,
 		.k_p = 20,
-		.invert_direction = 1,
+		.invert_direction = 0,
 		.invert_homing_direction = 1
 	},
 
@@ -108,8 +109,8 @@ motor_t motors[8] = {
 		.setpoint=0,
 		.mode = MOTOR_MODE_RUNNING,
 		.k_p = 20,
-		.invert_direction = 1,
-		.invert_homing_direction = 1
+		.invert_direction = 0,
+		.invert_homing_direction = 0
 	},
 
 	// motor 3
@@ -125,7 +126,7 @@ motor_t motors[8] = {
 		.setpoint=0,
 		.mode = MOTOR_MODE_RUNNING,
 		.k_p = 20,
-		.invert_direction = 1,
+		.invert_direction = 0,
 		.invert_homing_direction = 1
 	},
 
@@ -142,7 +143,7 @@ motor_t motors[8] = {
 		.setpoint=0,
 		.mode = MOTOR_MODE_RUNNING,
 		.k_p = 20,
-		.invert_direction = 1,
+		.invert_direction = 0,
 		.invert_homing_direction = 1
 	},
 
@@ -159,7 +160,7 @@ motor_t motors[8] = {
 		.setpoint=0,
 		.mode = MOTOR_MODE_RUNNING,
 		.k_p = 20,
-		.invert_direction = 1,
+		.invert_direction = 0,
 		.invert_homing_direction = 1
 	},
 
@@ -176,7 +177,7 @@ motor_t motors[8] = {
 		.setpoint=0,
 		.mode = MOTOR_MODE_RUNNING,
 		.k_p = 20,
-		.invert_direction = 1,
+		.invert_direction = 0,
 		.invert_homing_direction = 1
 	},
 
@@ -193,57 +194,57 @@ motor_t motors[8] = {
 		.setpoint=0,
 		.mode = MOTOR_MODE_RUNNING,
 		.k_p = 20,
-		.invert_direction = 1,
+		.invert_direction = 0,
 		.invert_homing_direction = 1
-	},
-
-	// motor 8
-	{
-		.current_position=MOTOR8_POSITION,
-		.ccr=&MOTOR8_PWM_TIM->MOTOR8_PWM_CCR,
-		.a_port=INA8_GPIO_Port,
-		.b_port=INB8_GPIO_Port,
-		.a_pin=INA8_Pin,
-		.b_pin=INB8_Pin,
-		.ms_port=MS8_GPIO_Port,
-		.ms_pin=MS8_Pin,
-		.setpoint=0,
-		.mode = MOTOR_MODE_RUNNING,
-		.k_p = 20,
-		.invert_direction = 1,
-		.invert_homing_direction = 1
-	}
+	}//,
+//
+//	// motor 8
+//	{
+//		.current_position=MOTOR8_POSITION,
+//		.ccr=&MOTOR8_PWM_TIM->MOTOR8_PWM_CCR,
+//		.a_port=INA8_GPIO_Port,
+//		.b_port=INB8_GPIO_Port,
+//		.a_pin=INA8_Pin,
+//		.b_pin=INB8_Pin,
+//		.ms_port=MS8_GPIO_Port,
+//		.ms_pin=MS8_Pin,
+//		.setpoint=0,
+//		.mode = MOTOR_MODE_RUNNING,
+//		.k_p = 20,
+//		.invert_direction = 1,
+//		.invert_homing_direction = 1
+//	}
 
 };
 
 void motor_init()
 {
 	///// ENABLE ENCODERS
-
-	// motor 1 -> software
-	// motor 2
-	TIM_CCxChannelCmd(MOTOR2_POSITION_TIM, TIM_CHANNEL_1, TIM_CCx_ENABLE);
-	MOTOR2_POSITION_TIM->CR1 |= TIM_CR1_CEN;
-
-	// motor 3
-	TIM_CCxChannelCmd(MOTOR3_POSITION_TIM, TIM_CHANNEL_1, TIM_CCx_ENABLE);
-	MOTOR3_POSITION_TIM->CR1 |= TIM_CR1_CEN;
-
-	// motor 4
-	TIM_CCxChannelCmd(MOTOR4_POSITION_TIM, TIM_CHANNEL_1, TIM_CCx_ENABLE);
-	MOTOR4_POSITION_TIM->CR1 |= TIM_CR1_CEN;
-
-	// motor 5
-	TIM_CCxChannelCmd(MOTOR5_POSITION_TIM, TIM_CHANNEL_1, TIM_CCx_ENABLE);
-	MOTOR5_POSITION_TIM->CR1 |= TIM_CR1_CEN;
-
-	// motor 6 --> software
-
-	// motor 7
+	// all motors are now software encoded except 7
+//	// motor 1 -> software
+//	// motor 2
+//	TIM_CCxChannelCmd(MOTOR2_POSITION_TIM, TIM_CHANNEL_1, TIM_CCx_ENABLE);
+//	MOTOR2_POSITION_TIM->CR1 |= TIM_CR1_CEN;
+//
+//	// motor 3
+//	TIM_CCxChannelCmd(MOTOR3_POSITION_TIM, TIM_CHANNEL_1, TIM_CCx_ENABLE);
+//	MOTOR3_POSITION_TIM->CR1 |= TIM_CR1_CEN;
+//
+//	// motor 4
+//	TIM_CCxChannelCmd(MOTOR4_POSITION_TIM, TIM_CHANNEL_1, TIM_CCx_ENABLE);
+//	MOTOR4_POSITION_TIM->CR1 |= TIM_CR1_CEN;
+//
+//	// motor 5
+//	TIM_CCxChannelCmd(MOTOR5_POSITION_TIM, TIM_CHANNEL_1, TIM_CCx_ENABLE);
+//	MOTOR5_POSITION_TIM->CR1 |= TIM_CR1_CEN;
+//
+//	// motor 6 --> software
+//
+//	// motor 7
 	TIM_CCxChannelCmd(MOTOR7_POSITION_TIM, TIM_CHANNEL_1, TIM_CCx_ENABLE);
 	MOTOR7_POSITION_TIM->CR1 |= TIM_CR1_CEN;
-
-	// motor 8 --> software
+//
+//	// motor 8 --> software
 
 
 
@@ -277,15 +278,15 @@ void motor_init()
 	MOTOR7_PWM_TIM->CR1 |= TIM_CR1_CEN;
 
 	// motor 8
-	TIM_CCxChannelCmd(MOTOR8_PWM_TIM, MOTOR8_PWM_CHANNEL, TIM_CCx_ENABLE);
-	MOTOR8_PWM_TIM->CR1 |= TIM_CR1_CEN;
+//	TIM_CCxChannelCmd(MOTOR8_PWM_TIM, MOTOR8_PWM_CHANNEL, TIM_CCx_ENABLE);
+//	MOTOR8_PWM_TIM->CR1 |= TIM_CR1_CEN;
 
 	HAL_TIM_Base_Start_IT(&htim6); // motor interrupt loop
 }
 
 void motor_control_loop()
 {
-	for(int i = 0; i < 8; i++)
+	for(int i = 0; i < 7; i++)
 	{
 		motor_t* motor = &motors[i];
 		if(motor->mode != MOTOR_MODE_RUNNING)

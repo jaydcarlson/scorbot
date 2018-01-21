@@ -7,4 +7,4 @@
 
 #include "softwareEncoder.h"
 
-int32_t motor1_encoder, motor6_encoder, motor8_encoder;
+int16_t motor1_encoder, motor2_encoder, motor3_encoder, motor4_encoder, motor5_encoder, motor6_encoder;

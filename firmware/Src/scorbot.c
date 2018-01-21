@@ -57,21 +57,35 @@ static void my_mqtt_subscribe(mqtt_client_t *client, void *arg) {
 }
 
 
+static char* nextChar(const char* message, char* match)
+{
+	char* found = strstr(message, match);
+	if(found == NULL)
+		return NULL;
+
+	return found+strlen(match);
+}
+
+
 static void mqtt_incoming_publish_cb(void *arg, const char *topic, u32_t topic_len, const u8_t *payload, u16_t payload_len) {
   LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("Incoming publish at topic \"%s\", data: %s\n", topic, payload));
-  if(strstr(topic, "setpoint") != NULL)
+  // check for motors
+  char* ptr;
+  if((ptr = nextChar(topic, "motors/")) != NULL)
   {
-	  if(strstr(topic, "/6") != NULL)
+	  if((ptr = nextChar(topic, "setpoint/")) != NULL)
 	  {
-		  int newSetpoint = atoi(payload);
-		  motor_set_position(6, newSetpoint);
-		  printf("New setpoint for motor 6: %d\r\n", newSetpoint);
+		  int motor = atoi(ptr);
+		  int newSetpoint = atoi((const char*)payload);
+		  motor_set_position(motor, newSetpoint);
+		  printf("New setpoint for motor %d: %d\r\n", motor, newSetpoint);
 	  }
-  } else if(strstr(topic, "home") != NULL)
-  {
-	  if(strstr(topic, "/6") != NULL)
+	  else if((ptr = nextChar(topic, "home/")) != NULL)
 	  {
-		  motor_home(6);
+		  int motor = atoi(ptr);
+//		  int newSetpoint = atoi((const char*)payload);
+		  motor_home(motor);
+		  printf("Homing motor %d\r\n", motor);
 	  }
   }
 }
