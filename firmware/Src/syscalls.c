@@ -171,7 +171,6 @@ int busy = 0;
 
 int _write(int file, char *ptr, int len)
 {
-//	return len;
 	for(int i=0;i<len;i++)
 	{
 		huart2.Instance->DR = ptr[i];

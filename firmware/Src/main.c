@@ -515,7 +515,7 @@ static void MX_TIM5_Init(void)
   htim5.Instance = TIM5;
   htim5.Init.Prescaler = 0;
   htim5.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim5.Init.Period = 12000;
+  htim5.Init.Period = 10000;
   htim5.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   if (HAL_TIM_PWM_Init(&htim5) != HAL_OK)
   {
@@ -580,7 +580,7 @@ static void MX_TIM9_Init(void)
   htim9.Instance = TIM9;
   htim9.Init.Prescaler = 0;
   htim9.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim9.Init.Period = 12000;
+  htim9.Init.Period = 10000;
   htim9.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   if (HAL_TIM_PWM_Init(&htim9) != HAL_OK)
   {
@@ -614,7 +614,7 @@ static void MX_TIM10_Init(void)
   htim10.Instance = TIM10;
   htim10.Init.Prescaler = 0;
   htim10.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim10.Init.Period = 12000;
+  htim10.Init.Period = 10000;
   htim10.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   if (HAL_TIM_Base_Init(&htim10) != HAL_OK)
   {
@@ -648,7 +648,7 @@ static void MX_TIM11_Init(void)
   htim11.Instance = TIM11;
   htim11.Init.Prescaler = 0;
   htim11.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim11.Init.Period = 12000;
+  htim11.Init.Period = 10000;
   htim11.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   if (HAL_TIM_Base_Init(&htim11) != HAL_OK)
   {
@@ -682,7 +682,7 @@ static void MX_TIM12_Init(void)
   htim12.Instance = TIM12;
   htim12.Init.Prescaler = 0;
   htim12.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim12.Init.Period = 12000;
+  htim12.Init.Period = 10000;
   htim12.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   if (HAL_TIM_PWM_Init(&htim12) != HAL_OK)
   {
@@ -817,17 +817,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : MS2_Pin MS5_Pin MS6_Pin */
-  GPIO_InitStruct.Pin = MS2_Pin|MS5_Pin|MS6_Pin;
+  /*Configure GPIO pins : MS2_Pin MS1_Pin MS5_Pin MS6_Pin */
+  GPIO_InitStruct.Pin = MS2_Pin|MS1_Pin|MS5_Pin|MS6_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : MS1_Pin */
-  GPIO_InitStruct.Pin = MS1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(MS1_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : ENC_A_M3_Pin ENC_A_M5_Pin */
   GPIO_InitStruct.Pin = ENC_A_M3_Pin|ENC_A_M5_Pin;

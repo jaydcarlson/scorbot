@@ -20,11 +20,14 @@ typedef struct motor {
 	uint16_t a_pin;
 	uint16_t b_pin;
 	uint16_t ms_pin;
+	uint16_t homing_speed;
 	motor_mode_t mode;
-	uint8_t invert_direction;
-	uint8_t invert_homing_direction;
+	uint8_t invert_direction_pins;
+	uint8_t invert_counter;
 	float k_p;
 } motor_t;
+
+#define MAX_PWM_VAL			9999
 
 // Motor PWM timer / counter
 #define MOTOR1_PWM_TIM 		TIM5
@@ -78,8 +81,8 @@ typedef struct motor {
 
 extern TIM_HandleTypeDef htim6;
 
-motor_t motors[7] = {
-	// motor 1
+motor_t motors[NUM_MOTORS] = {
+	// motor 0 -> base rotate
 	{
 		.current_position=MOTOR1_POSITION,
 		.ccr=&MOTOR1_PWM_TIM->MOTOR1_PWM_CCR,
@@ -91,12 +94,13 @@ motor_t motors[7] = {
 		.ms_pin=MS1_Pin,
 		.setpoint=0,
 		.mode = MOTOR_MODE_RUNNING,
-		.k_p = 20,
-		.invert_direction = 0,
-		.invert_homing_direction = 1
+		.k_p = 50,
+		.homing_speed = 8000,
+		.invert_direction_pins = 1,
+		.invert_counter = 1
 	},
 
-	// motor 2
+	// motor 1 -> lower link
 	{
 		.current_position=MOTOR2_POSITION,
 		.ccr=&MOTOR2_PWM_TIM->MOTOR2_PWM_CCR,
@@ -107,13 +111,14 @@ motor_t motors[7] = {
 		.ms_port=MS2_GPIO_Port,
 		.ms_pin=MS2_Pin,
 		.setpoint=0,
+		.homing_speed = 4000,
 		.mode = MOTOR_MODE_RUNNING,
 		.k_p = 20,
-		.invert_direction = 0,
-		.invert_homing_direction = 0
+		.invert_direction_pins = 0,
+		.invert_counter = 0
 	},
 
-	// motor 3
+	// motor 2 -> middle link
 	{
 		.current_position=MOTOR3_POSITION,
 		.ccr=&MOTOR3_PWM_TIM->MOTOR3_PWM_CCR,
@@ -124,13 +129,14 @@ motor_t motors[7] = {
 		.ms_port=MS3_GPIO_Port,
 		.ms_pin=MS3_Pin,
 		.setpoint=0,
+		.homing_speed = 4000,
 		.mode = MOTOR_MODE_RUNNING,
-		.k_p = 20,
-		.invert_direction = 0,
-		.invert_homing_direction = 1
+		.k_p = 50,
+		.invert_direction_pins = 1,
+		.invert_counter = 1
 	},
 
-	// motor 4
+	// motor 3 -> wrist #1
 	{
 		.current_position=MOTOR4_POSITION,
 		.ccr=&MOTOR4_PWM_TIM->MOTOR4_PWM_CCR,
@@ -141,13 +147,14 @@ motor_t motors[7] = {
 		.ms_port=MS4_GPIO_Port,
 		.ms_pin=MS4_Pin,
 		.setpoint=0,
+		.homing_speed = 4000,
 		.mode = MOTOR_MODE_RUNNING,
-		.k_p = 20,
-		.invert_direction = 0,
-		.invert_homing_direction = 1
+		.k_p = 50,
+		.invert_direction_pins = 1,
+		.invert_counter = 1
 	},
 
-	// motor 5
+	// motor 4 -> wrist #2
 	{
 		.current_position=MOTOR5_POSITION,
 		.ccr=&MOTOR5_PWM_TIM->MOTOR5_PWM_CCR,
@@ -158,13 +165,14 @@ motor_t motors[7] = {
 		.ms_port=MS5_GPIO_Port,
 		.ms_pin=MS5_Pin,
 		.setpoint=0,
+		.homing_speed = 4000,
 		.mode = MOTOR_MODE_RUNNING,
-		.k_p = 20,
-		.invert_direction = 0,
-		.invert_homing_direction = 1
+		.k_p = 50,
+		.invert_direction_pins = 1,
+		.invert_counter = 1
 	},
 
-	// motor 6
+	// motor 5 -> open/close
 	{
 		.current_position=MOTOR6_POSITION,
 		.ccr=&MOTOR6_PWM_TIM->MOTOR6_PWM_CCR,
@@ -175,13 +183,14 @@ motor_t motors[7] = {
 		.ms_port=MS6_GPIO_Port,
 		.ms_pin=MS6_Pin,
 		.setpoint=0,
+		.homing_speed = 4000,
 		.mode = MOTOR_MODE_RUNNING,
-		.k_p = 20,
-		.invert_direction = 0,
-		.invert_homing_direction = 1
+		.k_p = 50,
+		.invert_direction_pins = 1,
+		.invert_counter = 1
 	},
 
-	// motor 7
+	// motor 6 -> linear rail
 	{
 		.current_position=MOTOR7_POSITION,
 		.ccr=&MOTOR7_PWM_TIM->MOTOR7_PWM_CCR,
@@ -192,30 +201,54 @@ motor_t motors[7] = {
 		.ms_port=MS7_GPIO_Port,
 		.ms_pin=MS7_Pin,
 		.setpoint=0,
+		.homing_speed = 4000,
 		.mode = MOTOR_MODE_RUNNING,
-		.k_p = 20,
-		.invert_direction = 0,
-		.invert_homing_direction = 1
-	}//,
-//
-//	// motor 8
-//	{
-//		.current_position=MOTOR8_POSITION,
-//		.ccr=&MOTOR8_PWM_TIM->MOTOR8_PWM_CCR,
-//		.a_port=INA8_GPIO_Port,
-//		.b_port=INB8_GPIO_Port,
-//		.a_pin=INA8_Pin,
-//		.b_pin=INB8_Pin,
-//		.ms_port=MS8_GPIO_Port,
-//		.ms_pin=MS8_Pin,
-//		.setpoint=0,
-//		.mode = MOTOR_MODE_RUNNING,
-//		.k_p = 20,
-//		.invert_direction = 1,
-//		.invert_homing_direction = 1
-//	}
-
+		.k_p = 100,
+		.invert_direction_pins = 1,
+		.invert_counter = 1
+	}
 };
+
+inline void motor_forward(motor_t* motor)
+{
+	if(motor->invert_direction_pins)
+	{
+		motor->a_port->ODR &= ~(motor->a_pin);
+		motor->b_port->ODR |= motor->b_pin;
+	} else {
+		motor->a_port->ODR |= motor->a_pin;
+		motor->b_port->ODR &= ~(motor->b_pin);
+	}
+}
+
+inline void motor_reverse(motor_t* motor)
+{
+	if(motor->invert_direction_pins)
+	{
+		motor->a_port->ODR |= motor->a_pin;
+		motor->b_port->ODR &= ~(motor->b_pin);
+	} else {
+		motor->a_port->ODR &= ~(motor->a_pin);
+		motor->b_port->ODR |= motor->b_pin;
+	}
+}
+
+inline int16_t motor_position(motor_t* motor)
+{
+	int16_t position = *(motor->current_position);
+	if(motor->invert_counter)
+		position = -position;
+
+	return position;
+}
+
+int16_t motor_get_position(int motor)
+{
+	if(motor < NUM_MOTORS)
+		return motor_position(&motors[motor]);
+
+	return -1;
+}
 
 void motor_init()
 {
@@ -292,28 +325,21 @@ void motor_control_loop()
 		if(motor->mode != MOTOR_MODE_RUNNING)
 			return;
 
-		float error = motor->setpoint - (int16_t)*(motor->current_position);
-
-		if(motor->invert_direction)
-			error = -error;
+		float error = motor->setpoint - motor_position(motor);
 
 		// update direction
 		if(error > 0)
 		{
-			// forward
-			motor->a_port->ODR |= motor->a_pin;
-			motor->b_port->ODR &= ~(motor->b_pin);
+			motor_forward(motor);
 		} else {
 			error = -error;
-			// reverse
-			motor->a_port->ODR &= ~(motor->a_pin);
-			motor->b_port->ODR |= motor->b_pin;
+			motor_reverse(motor);
 		}
 
 	//	 update speed
 		float speed_update = error * motor->k_p;
-		if(speed_update > 12000)
-			speed_update = 12000;
+		if(speed_update > MAX_PWM_VAL)
+			speed_update = MAX_PWM_VAL;
 		*(motor->ccr) = (uint16_t)speed_update;
 	}
 }
@@ -323,7 +349,7 @@ void motor_set_position(int number, int position)
 	motors[number].setpoint = position;
 }
 
-void motor_home(int number)
+void motor_home(int number, uint8_t withLimitSwitches)
 {
 	motor_t* motor = &motors[number];
 
@@ -331,20 +357,15 @@ void motor_home(int number)
 
 	motor->setpoint = 0;
 
-	if(motor->invert_homing_direction)
+	if(withLimitSwitches)
 	{
-		// forward
-		motor->a_port->ODR |= motor->a_pin;
-		motor->b_port->ODR &= ~(motor->b_pin);
-	} else {
-		// reverse
-		motor->a_port->ODR &= ~(motor->a_pin);
-		motor->b_port->ODR |= motor->b_pin;
+		motor_reverse(motor);
+
+		*(motor->ccr) = motor->homing_speed;
+		while(motor->ms_port->IDR & motor->ms_pin);
+		*(motor->ccr) = 0;
 	}
 
-	*(motor->ccr) = 4000;
-	while(motor->ms_port->IDR & motor->ms_pin);
-	*(motor->ccr) = 0;
 	*(motor->current_position) = 0;
 
 	printf("homing complete\r\n");

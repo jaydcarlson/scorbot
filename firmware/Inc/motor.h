@@ -18,9 +18,11 @@ typedef enum motor_mode {
 	MOTOR_MODE_HOMING
 } motor_mode_t;
 
+#define NUM_MOTORS 7
+
 void motor_init();
 void motor_control_loop();
 void motor_set_position(int number, int position);
-void motor_home(int number);
-
+void motor_home(int number, uint8_t withLimitSwitches);
+int16_t motor_get_position(int motor);
 #endif /* MOTOR_H_ */

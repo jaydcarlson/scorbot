@@ -17,9 +17,6 @@ typedef enum {
   MQTT_STATE_INIT,
   MQTT_STATE_IDLE,
   MQTT_STATE_DO_CONNECT,
-#if MQTT_USE_TLS
-  MQTT_STATE_DO_TLS_HANDSHAKE,
-#endif
   MQTT_STATE_WAIT_FOR_CONNECTION,
   MQTT_STATE_CONNECTED,
   MQTT_STATE_DO_PUBLISH,
@@ -68,7 +65,7 @@ static char* nextChar(const char* message, char* match)
 
 
 static void mqtt_incoming_publish_cb(void *arg, const char *topic, u32_t topic_len, const u8_t *payload, u16_t payload_len) {
-  LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("Incoming publish at topic \"%s\", data: %s\n", topic, payload));
+//  LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("Incoming publish at topic \"%s\", data: %s\n", topic, payload));
   // check for motors
   char* ptr;
   if((ptr = nextChar(topic, "motors/")) != NULL)
@@ -78,13 +75,13 @@ static void mqtt_incoming_publish_cb(void *arg, const char *topic, u32_t topic_l
 		  int motor = atoi(ptr);
 		  int newSetpoint = atoi((const char*)payload);
 		  motor_set_position(motor, newSetpoint);
-		  printf("New setpoint for motor %d: %d\r\n", motor, newSetpoint);
+//		  printf("New setpoint for motor %d: %d\r\n", motor, newSetpoint);
 	  }
 	  else if((ptr = nextChar(topic, "home/")) != NULL)
 	  {
 		  int motor = atoi(ptr);
-//		  int newSetpoint = atoi((const char*)payload);
-		  motor_home(motor);
+		  uint8_t withLimitSwitches = atoi((const char*)payload);
+		  motor_home(motor, withLimitSwitches);
 		  printf("Homing motor %d\r\n", motor);
 	  }
   }
@@ -126,12 +123,8 @@ static int mqtt_do_connect(mqtt_client_t *client, ip4_addr_t *broker_ipaddr) {
      otherwise mqtt_connection_cb will be called with connection result after attempting
      to establish a connection with the server.
      For now MQTT version 3.1.1 is always used */
-#if MQTT_USE_TLS
-  client->ssl_context = &ssl;
-  err = mqtt_client_connect(client, broker_ipaddr, MQTT_PORT_TLS, mqtt_connection_cb, 0, &ci);
-#else
+
   err = mqtt_client_connect(client, broker_ipaddr, MQTT_PORT, mqtt_connection_cb, 0, &ci);
-#endif
   /* For now just print the result code if something goes wrong */
   if(err != ERR_OK) {
     LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("mqtt_connect return %d\n", err));
@@ -148,40 +141,18 @@ static void MqttDoStateMachine(mqtt_client_t *mqtt_client, ip4_addr_t *broker_ip
     	MQTT_state = MQTT_STATE_DO_CONNECT;
       break;
     case MQTT_STATE_DO_CONNECT:
-      #if MQTT_USE_TLS
-        if (TLS_Init()!=0) { /* failed? */
-          LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("ERROR: failed to initialize for TLS!\r\n"));
-          for(;;) {} /* stay here in case of error */
-        }
-      #endif
       LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE, ("Connecting to broker\r\n"));
       if (mqtt_do_connect(mqtt_client, broker_ipaddr)==0) {
-#if MQTT_USE_TLS
-        MQTT_state = MQTT_STATE_DO_TLS_HANDSHAKE;
-#else
         MQTT_state = MQTT_STATE_WAIT_FOR_CONNECTION;
-#endif
       } else {
         LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("Failed to connect to broker\r\n"));
       }
       break;
-#if MQTT_USE_TLS
-    case MQTT_STATE_DO_TLS_HANDSHAKE:
-      if (mqtt_do_tls_handshake(mqtt_client)==0) {
-        LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("TLS handshake completed\r\n"));
-        mqtt_start_mqtt(mqtt_client);
-        MQTT_state = MQTT_STATE_WAIT_FOR_CONNECTION;
-      }
-      break;
-#endif
     case MQTT_STATE_WAIT_FOR_CONNECTION:
       if (mqtt_client_is_connected(mqtt_client)) {
         LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("Client is connected\r\n"));
         MQTT_state = MQTT_STATE_CONNECTED;
       } else {
-#if MQTT_USE_TLS
-        mqtt_recv_from_tls(mqtt_client);
-#endif
       }
       break;
     case MQTT_STATE_CONNECTED:
@@ -189,25 +160,13 @@ static void MqttDoStateMachine(mqtt_client_t *mqtt_client, ip4_addr_t *broker_ip
         LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("Client got disconnected?!?\r\n"));
         MQTT_state = MQTT_STATE_DO_CONNECT;
       }
-#if MQTT_USE_TLS
-      else {
-        mqtt_tls_output_send(mqtt_client); /* send (if any) */
-        mqtt_recv_from_tls(mqtt_client); /* poll if we have incoming packets */
-      }
-#endif
       break;
     case MQTT_STATE_DO_SUBSCRIBE:
       LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("Subscribe from broker\r\n"));
       my_mqtt_subscribe(mqtt_client, NULL);
       MQTT_state = MQTT_STATE_CONNECTED;
       break;
-#if 0
-    case MQTT_STATE_DO_PUBLISH:
-      LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("Publish to broker\r\n"));
-      my_mqtt_publish(mqtt_client, NULL);
-      MQTT_state = MQTT_STATE_CONNECTED;
-      break;
-#endif
+
     case MQTT_STATE_DO_DISCONNECT:
       LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("Disconnect from broker\r\n"));
       mqtt_disconnect(mqtt_client);
@@ -218,8 +177,38 @@ static void MqttDoStateMachine(mqtt_client_t *mqtt_client, ip4_addr_t *broker_ip
   }
 }
 
+char position_topic[50];
+char position_payload[8];
+
+void position_cb(void *arg, err_t err)
+{
+	if(err != ERR_OK)
+	{
+		printf("%d\r\n", err);
+	}
+}
+
+void update_positions()
+{
+	for(;;) {
+			if(MQTT_state == MQTT_STATE_CONNECTED)
+			{
+				for(int i = 0;i < 7; i++)
+				{
+					sprintf(position_topic, "motors/position/%d", i);
+					sprintf(position_payload, "%d", motor_get_position(i));
+					mqtt_publish(&mqtt_client, position_topic, position_payload, strlen(position_payload), 0, 1, position_cb, NULL);
+				}
+
+			}
+			vTaskDelay(10);
+		}
+}
+
 void Server_MainTask()
 {
+	xTaskCreate(update_positions, "update_positions", 200, NULL, 0, NULL);
+
 	IP4_ADDR(&broker_ip, 192, 168, 0, 1);
 	MQTT_state = MQTT_STATE_DO_CONNECT;
 	for(;;) {
