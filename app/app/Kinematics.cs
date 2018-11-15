@@ -39,7 +39,15 @@ namespace app
             //var t4 = TransformMatrixFromDH(90, 220, Wrist1.Angle - Wrist2.Angle, 220);
         }
 
-        public double[,] TransformMatrixFromDH(double alpha, double a, double theta, double d)
+        /// <summary>
+        /// Gets a 4x4 transform matrix from the given Denavit-Hartenberg parameters
+        /// </summary>
+        /// <param name="alpha">Angle about the common normal from the old x axis to the new x axis</param>
+        /// <param name="r">Length of the common normal (radius about the previous z)</param>
+        /// <param name="theta">Angle about the previous z, from old x to new x</param>
+        /// <param name="d">Offset along previous z to the common normal</param>
+        /// <returns>The 4x4 transform matrix</returns>
+        public double[,] TransformMatrixFromDH(double alpha, double r, double theta, double d)
         {
             alpha = DegToRad(alpha);
             theta = DegToRad(theta);
@@ -47,12 +55,12 @@ namespace app
             retVal[0, 0] = Math.Cos(theta);
             retVal[0, 1] = -Math.Sin(theta) * Math.Cos(alpha);
             retVal[0, 2] = Math.Sin(theta) * Math.Sin(alpha);
-            retVal[0, 3] = a * Math.Cos(theta);
+            retVal[0, 3] = r * Math.Cos(theta);
 
             retVal[1, 0] = Math.Sin(theta);
             retVal[1, 1] = Math.Cos(theta) * Math.Cos(alpha);
             retVal[1, 2] = -Math.Cos(theta) * Math.Sin(alpha);
-            retVal[1, 3] = a * Math.Sin(theta);
+            retVal[1, 3] = r * Math.Sin(theta);
 
             retVal[2, 0] = 0;
             retVal[2, 1] = Math.Sin(alpha);
