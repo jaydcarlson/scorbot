@@ -12,7 +12,7 @@ namespace app
     {
         public ObservableCollection<Motor> Motors { get; set; } = new ObservableCollection<Motor>();
         public Kinematics Kinematics { get; set; }
-        public Scorbot() : base("192.168.0.1", 1883)
+        public Scorbot() : base("192.168.0.10", 1883)
         {
             for (int i = 0; i < 7; i++)
                 Motors.Add(new Motor(this, i));

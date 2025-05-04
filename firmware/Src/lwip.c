@@ -1,52 +1,23 @@
+/* USER CODE BEGIN Header */
 /**
  ******************************************************************************
   * File Name          : LWIP.c
   * Description        : This file provides initialization code for LWIP
   *                      middleWare.
   ******************************************************************************
-  * This notice applies to any and all portions of this file
-  * that are not between comment pairs USER CODE BEGIN and
-  * USER CODE END. Other portions of this file, whether 
-  * inserted by the user or by software development tools
-  * are owned by their respective copyright owners.
+  * @attention
   *
-  * Copyright (c) 2018 STMicroelectronics International N.V. 
+  * Copyright (c) 2025 STMicroelectronics.
   * All rights reserved.
   *
-  * Redistribution and use in source and binary forms, with or without 
-  * modification, are permitted, provided that the following conditions are met:
-  *
-  * 1. Redistribution of source code must retain the above copyright notice, 
-  *    this list of conditions and the following disclaimer.
-  * 2. Redistributions in binary form must reproduce the above copyright notice,
-  *    this list of conditions and the following disclaimer in the documentation
-  *    and/or other materials provided with the distribution.
-  * 3. Neither the name of STMicroelectronics nor the names of other 
-  *    contributors to this software may be used to endorse or promote products 
-  *    derived from this software without specific written permission.
-  * 4. This software, including modifications and/or derivative works of this 
-  *    software, must execute solely and exclusively on microcontroller or
-  *    microprocessor devices manufactured by or for STMicroelectronics.
-  * 5. Redistribution and use of this software other than as permitted under 
-  *    this license is void and will automatically terminate your rights under 
-  *    this license. 
-  *
-  * THIS SOFTWARE IS PROVIDED BY STMICROELECTRONICS AND CONTRIBUTORS "AS IS" 
-  * AND ANY EXPRESS, IMPLIED OR STATUTORY WARRANTIES, INCLUDING, BUT NOT 
-  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
-  * PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY INTELLECTUAL PROPERTY
-  * RIGHTS ARE DISCLAIMED TO THE FULLEST EXTENT PERMITTED BY LAW. IN NO EVENT 
-  * SHALL STMICROELECTRONICS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-  * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-  * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, 
-  * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
-  * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
-  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
-  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
   */
-  
+/* USER CODE END Header */
+
 /* Includes ------------------------------------------------------------------*/
 #include "lwip.h"
 #include "lwip/init.h"
@@ -54,13 +25,15 @@
 #if defined ( __CC_ARM )  /* MDK ARM Compiler */
 #include "lwip/sio.h"
 #endif /* MDK ARM Compiler */
+#include "ethernetif.h"
 
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
 /* Private function prototypes -----------------------------------------------*/
+static void ethernet_link_status_updated(struct netif *netif);
 /* ETH Variables initialization ----------------------------------------------*/
-void _Error_Handler(char * file, int line);
+void Error_Handler(void);
 
 /* USER CODE BEGIN 1 */
 
@@ -106,6 +79,15 @@ void MX_LWIP_Init(void)
     netif_set_down(&gnetif);
   }
 
+  /* Set the link callback function, this function is called on change of link status*/
+  netif_set_link_callback(&gnetif, ethernet_link_status_updated);
+
+  /* Create the Ethernet link handler thread */
+/* USER CODE BEGIN H7_OS_THREAD_DEF_CREATE_CMSIS_RTOS_V1 */
+  osThreadDef(EthLink, ethernet_link_thread, osPriorityBelowNormal, 0, configMINIMAL_STACK_SIZE *2);
+  osThreadCreate (osThread(EthLink), &gnetif);
+/* USER CODE END H7_OS_THREAD_DEF_CREATE_CMSIS_RTOS_V1 */
+
   /* Start DHCP negotiation for a network interface (IPv4) */
   dhcp_start(&gnetif);
 
@@ -121,6 +103,25 @@ void MX_LWIP_Init(void)
 /* USER CODE END 4 */
 #endif
 
+/**
+  * @brief  Notify the User about the network interface config status
+  * @param  netif: the network interface
+  * @retval None
+  */
+static void ethernet_link_status_updated(struct netif *netif)
+{
+  if (netif_is_up(netif))
+  {
+/* USER CODE BEGIN 5 */
+/* USER CODE END 5 */
+  }
+  else /* netif is down */
+  {
+/* USER CODE BEGIN 6 */
+/* USER CODE END 6 */
+  }
+}
+
 #if defined ( __CC_ARM )  /* MDK ARM Compiler */
 /**
  * Opens a serial device for communication.
@@ -135,7 +136,7 @@ sio_fd_t sio_open(u8_t devnum)
 /* USER CODE BEGIN 7 */
   sd = 0; // dummy code
 /* USER CODE END 7 */
-	
+
   return sd;
 }
 
@@ -170,7 +171,7 @@ u32_t sio_read(sio_fd_t fd, u8_t *data, u32_t len)
 
 /* USER CODE BEGIN 9 */
   recved_bytes = 0; // dummy code
-/* USER CODE END 9 */	
+/* USER CODE END 9 */
   return recved_bytes;
 }
 
@@ -189,9 +190,8 @@ u32_t sio_tryread(sio_fd_t fd, u8_t *data, u32_t len)
 
 /* USER CODE BEGIN 10 */
   recved_bytes = 0; // dummy code
-/* USER CODE END 10 */	
+/* USER CODE END 10 */
   return recved_bytes;
 }
 #endif /* MDK ARM Compiler */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

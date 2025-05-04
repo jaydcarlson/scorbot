@@ -6,7 +6,8 @@
  */
 
 #include <scorbot.h>
-#include "mqtt.h"
+#include "mqtt_opts.h"
+#include "lwip/apps/mqtt.h"
 #include "lwip/api.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -24,7 +25,7 @@ typedef enum {
   MQTT_STATE_DO_DISCONNECT
 } MQTT_State_t;
 
-mqtt_client_t mqtt_client;
+mqtt_client_t* mqtt_client;
 ip4_addr_t broker_ip;
 static MQTT_State_t MQTT_state = MQTT_STATE_INIT;
 
@@ -53,7 +54,6 @@ static void my_mqtt_subscribe(mqtt_client_t *client, void *arg) {
 //  LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("Subscribed to topic \"%s\", res: %d\r\n", topic, (int)err));
 }
 
-
 static char* nextChar(const char* message, char* match)
 {
 	char* found = strstr(message, match);
@@ -63,53 +63,63 @@ static char* nextChar(const char* message, char* match)
 	return found+strlen(match);
 }
 
+// Buffer to store incoming payload
+static char payload_buffer[256];
+static int payload_index = 0;
 
-static void mqtt_incoming_publish_cb(void *arg, const char *topic, u32_t topic_len, const u8_t *payload, u16_t payload_len) {
-//  LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("Incoming publish at topic \"%s\", data: %s\n", topic, payload));
-  // check for motors
-  char* ptr;
-  if((ptr = nextChar(topic, "motors/")) != NULL)
-  {
-	  if((ptr = nextChar(topic, "setpoint/")) != NULL)
-	  {
-		  int motor = atoi(ptr);
-		  int newSetpoint = atoi((const char*)payload);
-		  motor_set_position(motor, newSetpoint);
-//		  printf("New setpoint for motor %d: %d\r\n", motor, newSetpoint);
-	  }
-	  else if((ptr = nextChar(topic, "home/")) != NULL)
-	  {
-		  int motor = atoi(ptr);
-		  uint8_t withLimitSwitches = atoi((const char*)payload);
-		  motor_home(motor, withLimitSwitches);
-		  printf("Homing motor %d\r\n", motor);
-	  }
-  }
+static void mqtt_incoming_data_cb(void *arg, const u8_t *data, u16_t len, u8_t flags) {
+    // Copy the incoming data to our buffer
+    if (payload_index + len < sizeof(payload_buffer)) {
+        memcpy(payload_buffer + payload_index, data, len);
+        payload_index += len;
+    }
+    
+    // If this is the last fragment, process the complete payload
+    if (flags & MQTT_DATA_FLAG_LAST) {
+        payload_buffer[payload_index] = '\0'; // Null terminate the string
+        payload_index = 0; // Reset for next message
+    }
+}
+static void mqtt_incoming_publish_cb(void *arg, const char *topic, u32_t tot_len) {
+    // check for motors
+    char* ptr;
+    if((ptr = nextChar(topic, "motors/")) != NULL)
+    {
+        if((ptr = nextChar(topic, "setpoint/")) != NULL)
+        {
+            int motor = atoi(ptr);
+            int newSetpoint = atoi((const char*)payload_buffer);
+            motor_set_position(motor, newSetpoint);
+        }
+        else if((ptr = nextChar(topic, "home/")) != NULL)
+        {
+            int motor = atoi(ptr);
+            uint8_t withLimitSwitches = atoi((const char*)payload_buffer);
+            motor_home(motor, withLimitSwitches);
+            printf("Homing motor %d\r\n", motor);
+        }
+    }
 }
 
 static void mqtt_connection_cb(mqtt_client_t *client, void *arg, mqtt_connection_status_t status) {
-  //err_t err;
+    if(status == MQTT_CONNECT_ACCEPTED) {
+        LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("mqtt_connection_cb: Successfully connected\n"));
 
-  if(status == MQTT_CONNECT_ACCEPTED) {
-    LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("mqtt_connection_cb: Successfully connected\n"));
+        /* Setup callback for incoming publish requests */
+        mqtt_set_inpub_callback(client, mqtt_incoming_publish_cb, mqtt_incoming_data_cb, arg);
 
-    /* Setup callback for incoming publish requests */
-    mqtt_set_inpub_callback(client, mqtt_incoming_publish_cb, arg);
-
-    my_mqtt_subscribe(client, arg);
-  } else {
-    LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("mqtt_connection_cb: Disconnected, reason: %d\n", status));
-    MQTT_state = MQTT_STATE_IDLE;
-    /* Its more nice to be connected, so try to reconnect */
-//    mqtt_do_connect(client, &broker_ip);
-  }
+        my_mqtt_subscribe(client, arg);
+    } else {
+        LWIP_DEBUGF(MQTT_APP_DEBUG_TRACE,("mqtt_connection_cb: Disconnected, reason: %d\n", status));
+        MQTT_state = MQTT_STATE_IDLE;
+    }
 }
 
 static int mqtt_do_connect(mqtt_client_t *client, ip4_addr_t *broker_ipaddr) {
   struct mqtt_connect_client_info_t ci;
   err_t err;
 
-  memset(client, 0, sizeof(mqtt_client_t)); /* initialize all fields */
+  // memset(client, 0, sizeof(mqtt_client_t)); /* initialize all fields */
 
   /* Setup an empty client info structure */
   memset(&ci, 0, sizeof(ci));
@@ -209,10 +219,11 @@ void Server_MainTask()
 {
 	xTaskCreate(update_positions, "update_positions", 200, NULL, 0, NULL);
 
-	IP4_ADDR(&broker_ip, 192, 168, 0, 1);
+	IP4_ADDR(&broker_ip, 192, 168, 0, 10);
 	MQTT_state = MQTT_STATE_DO_CONNECT;
+	mqtt_client = mqtt_client_new();
 	for(;;) {
-		MqttDoStateMachine(&mqtt_client, &broker_ip);
+		MqttDoStateMachine(mqtt_client, &broker_ip);
 		vTaskDelay(1000);
 	}
 }

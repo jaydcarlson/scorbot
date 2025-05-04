@@ -1,0 +1,16 @@
+{
+    "configurations": [
+    {
+        "cwd": "${workspaceFolder}",
+        "executable": "build/firmware.elf",
+        "name": "Debug with JLink",
+        "request": "launch",
+        "type": "cortex-debug",
+        "device": "STM32F407VE",
+        "runToEntryPoint": "main",
+        "showDevDebugOutput": "none",
+        "servertype": "jlink",
+        "preLaunchTask": "Build"
+    }
+    ]
+}

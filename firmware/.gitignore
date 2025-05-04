@@ -1,1 +1,5 @@
 /Debug/
+build/
+.cache/
+.settings/language.settings.xml
+compile_commands.json
