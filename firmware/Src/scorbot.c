@@ -207,17 +207,18 @@ void update_positions()
 				{
 					sprintf(position_topic, "motors/position/%d", i);
 					sprintf(position_payload, "%d", motor_get_position(i));
-					mqtt_publish(&mqtt_client, position_topic, position_payload, strlen(position_payload), 0, 1, position_cb, NULL);
+          // printf("Publishing position %s to %s\r\n", position_payload, position_topic);
+					mqtt_publish(mqtt_client, position_topic, position_payload, strlen(position_payload), 0, 0, position_cb, NULL);
 				}
 
 			}
-			vTaskDelay(10);
+			vTaskDelay(100);
 		}
 }
 
 void Server_MainTask()
 {
-	xTaskCreate(update_positions, "update_positions", 200, NULL, 0, NULL);
+	xTaskCreate(update_positions, "update_positions", 1024, NULL, 0, NULL);
 
 	IP4_ADDR(&broker_ip, 192, 168, 0, 10);
 	MQTT_state = MQTT_STATE_DO_CONNECT;

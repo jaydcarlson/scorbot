@@ -27,7 +27,7 @@ typedef struct motor {
 	float k_p;
 } motor_t;
 
-#define MAX_PWM_VAL			9999
+#define MAX_PWM_VAL			4199
 
 // Motor PWM timer / counter
 #define MOTOR1_PWM_TIM 		TIM5
