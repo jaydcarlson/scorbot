@@ -18,31 +18,31 @@ namespace app
                 Motors.Add(new Motor(this, i));
 
             Motors[0].Name = "Base";
-            Motors[0].TicksPerDegree = 6500 / 90;
-            Motors[0].Minimum = -11000;
-            Motors[0].Maximum = 9000;
+            //Motors[0].TicksPerDegree = 6500 / 90;
+            Motors[0].Minimum = -20;
+            Motors[0].Maximum = 20;
 
             Motors[1].Name = "Shoulder";
-            Motors[1].TicksPerDegree = 20000/360;
-            Motors[1].Minimum = -5000;
-            Motors[1].Maximum = 5000;
+            //Motors[1].TicksPerDegree = 20000/360;
+            Motors[1].Minimum = 0;
+            Motors[1].Maximum = 100;
 
             Motors[2].Name = "Elbow";
-            Motors[2].TicksPerDegree = 20000/360;
-            Motors[2].Minimum = -10000;
-            Motors[2].Maximum = 10000;
+            //Motors[2].TicksPerDegree = 20000/360;
+            Motors[2].Minimum = 0;
+            Motors[2].Maximum = 100;
 
             Motors[3].Name = "Wrist #1";
-            Motors[3].Minimum = -10000;
-            Motors[3].Maximum = 10000;
+            Motors[3].Minimum = -100;
+            Motors[3].Maximum = 100;
 
             Motors[4].Name = "Wrist #2";
-            Motors[4].Minimum = -10000;
-            Motors[4].Maximum = 10000;
+            Motors[4].Minimum = -100;
+            Motors[4].Maximum = 100;
 
             Motors[5].Name = "Gripper";
             Motors[5].Minimum = 0;
-            Motors[5].Maximum = 2500;
+            Motors[5].Maximum = 25;
 
             Motors[6].Name = "Slide";
             Motors[6].Minimum = 0;

@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "motor.h"
+#include "joint.h"
 
 typedef enum {
   MQTT_STATE_INIT,
@@ -89,14 +89,13 @@ static void mqtt_incoming_publish_cb(void *arg, const char *topic, u32_t tot_len
         {
             int motor = atoi(ptr);
             int newSetpoint = atoi((const char*)payload_buffer);
-            motor_set_position(motor, newSetpoint);
+            joint_set_angle(&joints[motor], newSetpoint);
         }
         else if((ptr = nextChar(topic, "home/")) != NULL)
         {
             int motor = atoi(ptr);
-            uint8_t withLimitSwitches = atoi((const char*)payload_buffer);
-            motor_home(motor, withLimitSwitches);
             printf("Homing motor %d\r\n", motor);
+            joint_home(&joints[motor]);
         }
     }
 }
@@ -206,7 +205,7 @@ void update_positions()
 				for(int i = 0;i < 7; i++)
 				{
 					sprintf(position_topic, "motors/position/%d", i);
-					sprintf(position_payload, "%d", motor_get_position(i));
+					sprintf(position_payload, "%d", motor_get_current_position(&motors[i]));
           // printf("Publishing position %s to %s\r\n", position_payload, position_topic);
 					mqtt_publish(mqtt_client, position_topic, position_payload, strlen(position_payload), 0, 0, position_cb, NULL);
 				}
