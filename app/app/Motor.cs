@@ -27,12 +27,12 @@ namespace app
 
             JogForward = new RelayCommand(() =>
             {
-                Setpoint += 100;
+                Setpoint += 1;
             });
 
             JogBackward = new RelayCommand(() =>
             {
-                Setpoint -= 100;
+                Setpoint -= 1;
             });
         }
 

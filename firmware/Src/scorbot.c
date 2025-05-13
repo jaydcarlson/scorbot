@@ -89,6 +89,7 @@ static void mqtt_incoming_publish_cb(void *arg, const char *topic, u32_t tot_len
         {
             int motor = atoi(ptr);
             int newSetpoint = atoi((const char*)payload_buffer);
+            printf("Setting joint angle on joint %d to %d\r\n", motor, newSetpoint);
             joint_set_angle(&joints[motor], newSetpoint);
         }
         else if((ptr = nextChar(topic, "home/")) != NULL)

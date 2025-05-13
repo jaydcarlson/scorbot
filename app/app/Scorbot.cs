@@ -19,8 +19,8 @@ namespace app
 
             Motors[0].Name = "Base";
             //Motors[0].TicksPerDegree = 6500 / 90;
-            Motors[0].Minimum = -20;
-            Motors[0].Maximum = 20;
+            Motors[0].Minimum = 0;
+            Motors[0].Maximum = 160;
 
             Motors[1].Name = "Shoulder";
             //Motors[1].TicksPerDegree = 20000/360;

@@ -6,9 +6,12 @@ typedef struct {
     motor_t* primary_motor;
     motor_t* coupled_motor;
     float coupling_factor;
+    int32_t coupling_offset;
     float gear_ratio;
     float angle_setpoint;
     float angle_actual;
+    float max_angle;
+    float min_angle;
 	uint16_t ms_pin;
 	volatile GPIO_TypeDef* ms_port;
 } joint_t;
