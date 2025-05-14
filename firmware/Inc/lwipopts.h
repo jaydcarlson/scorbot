@@ -41,6 +41,8 @@
 /* Parameters set in STM32CubeMX LwIP Configuration GUI -*/
 /*----- WITH_RTOS enabled (Since FREERTOS is set) -----*/
 #define WITH_RTOS 1
+/*----- WITH_MBEDTLS enabled (Since MBEDTLS and FREERTOS are set) -----*/
+#define WITH_MBEDTLS 1
 /*----- CHECKSUM_BY_HARDWARE enabled -----*/
 #define CHECKSUM_BY_HARDWARE 1
 /*-----------------------------------------------------------------------------*/
@@ -51,8 +53,14 @@
 #define LWIP_DHCP 1
 /*----- Default value in ETH configuration GUI in CubeMx: 1524 -----*/
 #define ETH_RX_BUFFER_SIZE 1536
-/*----- Default Value for LWIP_DNS: 0 ---*/
+/*----- Default Value for LWIP_IGMP: 0 ---*/
+#define LWIP_IGMP 1
+/*----- Value in opt.h for LWIP_DNS: 0 -----*/
 #define LWIP_DNS 1
+/*----- Default Value for MEMP_NUM_TCP_PCB: 5 ---*/
+#define MEMP_NUM_TCP_PCB 10
+/*----- Default Value for MEMP_MEM_MALLOC: 0 ---*/
+#define MEMP_MEM_MALLOC 1
 /*----- Value in opt.h for MEM_ALIGNMENT: 1 -----*/
 #define MEM_ALIGNMENT 4
 /*----- Default Value for H7 devices: 0x30044000 -----*/
@@ -95,6 +103,16 @@
 #define DEFAULT_ACCEPTMBOX_SIZE 6
 /*----- Value in opt.h for RECV_BUFSIZE_DEFAULT: INT_MAX -----*/
 #define RECV_BUFSIZE_DEFAULT 2000000000
+/*----- Value in opt.h for LWIP_USE_EXTERNAL_MBEDTLS: 0 -----*/
+#define LWIP_USE_EXTERNAL_MBEDTLS 1
+/*----- Default Value for LWIP_SNTP: 0 ---*/
+#define LWIP_SNTP 1
+/*----- Default Value for LWIP_MDNS: 0 ---*/
+#define LWIP_MDNS 1
+/*----- Default Value for LWIP_MDNS_RESPONDER: 0 ---*/
+#define LWIP_MDNS_RESPONDER 1
+/*----- Default Value for MDNS_MAX_SERVICES: 0 ---*/
+#define MDNS_MAX_SERVICES 2
 /*----- Value in opt.h for LWIP_STATS: 1 -----*/
 #define LWIP_STATS 0
 /*----- Value in opt.h for CHECKSUM_GEN_IP: 1 -----*/
@@ -114,7 +132,7 @@
 /*----- Value in opt.h for CHECKSUM_CHECK_ICMP6: 1 -----*/
 #define CHECKSUM_CHECK_ICMP6 0
 /*----- Default Value for LWIP_DBG_MIN_LEVEL: LWIP_DBG_LEVEL_ALL ---*/
-#define LWIP_DBG_MIN_LEVEL LWIP_DBG_LEVEL_SERIOUS
+#define LWIP_DBG_MIN_LEVEL LWIP_DBG_LEVEL_ALL
 /*----- Default Value for ETHARP_DEBUG: LWIP_DBG_OFF ---*/
 #define ETHARP_DEBUG LWIP_DBG_ON
 /*----- Default Value for NETIF_DEBUG: LWIP_DBG_OFF ---*/

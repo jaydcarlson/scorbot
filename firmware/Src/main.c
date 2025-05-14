@@ -19,18 +19,19 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
-#include "lwip.h"
+#include "mbedtls.h"
 #include "usb_device.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include "lwip.h"
 #include "scorbot.h"
 #include "motor.h"
+#include "websocket.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -66,6 +67,10 @@ UART_HandleTypeDef huart2;
 osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
+
+ws_server_t ws_server = {
+  .connected_clients_cnt = 0
+};
 
 /* USER CODE END PV */
 
@@ -141,7 +146,7 @@ int main(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, 0);
 
-GPIO_InitTypeDef GPIO_InitStruct;
+  GPIO_InitTypeDef GPIO_InitStruct;
 
   GPIO_InitStruct.Pin = GPIO_PIN_6;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -169,6 +174,7 @@ GPIO_InitTypeDef GPIO_InitStruct;
   MX_TIM11_Init();
   MX_TIM12_Init();
   MX_USART2_UART_Init();
+  MX_MBEDTLS_Init();
   /* USER CODE BEGIN 2 */
   printf("Starting...\r\n");
   motor_init();
@@ -202,6 +208,7 @@ GPIO_InitTypeDef GPIO_InitStruct;
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
+  sys_thread_new("WS", ws_server_task, (void*)&ws_server, 1024, osPriorityNormal);
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
@@ -1085,12 +1092,10 @@ void LwIP_DHCP_task() {
 /* USER CODE END Header_StartDefaultTask */
 void StartDefaultTask(void const * argument)
 {
-  /* init code for LWIP */
-  MX_LWIP_Init();
-
   /* init code for USB_DEVICE */
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 5 */
+  MX_LWIP_Init();
   Server_MainTask();
   /* USER CODE END 5 */
 }
