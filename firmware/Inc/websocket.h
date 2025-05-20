@@ -1,3 +1,5 @@
+// Lightly modified from example code at https://github.com/maxushka/web_socket_stm32f4
+
 #ifndef __WEBSOCKET_H
 #define __WEBSOCKET_H
 
@@ -5,8 +7,8 @@
 #include "cmsis_os.h"
 
 #define WS_USE_SDRAM                 0
-#define WS_PORT                      8765
-#define WS_MAX_CLIENTS               1
+#define WS_PORT                      8080
+#define WS_MAX_CLIENTS               3
 #define WS_SEND_BUFFER_SIZE          1024
 #define WS_MSG_BUFFER_SIZE           512
 #define WS_CLIENT_RECV_BUFFER_SIZE   1024
@@ -38,6 +40,8 @@ typedef struct
   void *server_ptr;
   uint8_t recv_buf[WS_CLIENT_RECV_BUFFER_SIZE];
   uint32_t established;
+  uint32_t ws_connected;
+  uint32_t id;
 } ws_client_t;
 
 typedef struct
@@ -48,13 +52,21 @@ typedef struct
 #else
   uint8_t send_buf[WS_SEND_BUFFER_SIZE];
 #endif
-  void (*msg_handler)( uint8_t *data, uint32_t len, ws_type_t type );
+  void (*msg_handler)( ws_client_t* client, uint8_t *data, uint32_t len, ws_type_t type );
   uint32_t connected_clients_cnt;
 } ws_server_t;
 
 
 void ws_server_task( void * arg );
-void ws_send_message( ws_server_t *ws, ws_msg_t *msg );
+
+/**
+ * @brief Send a message to a client, or all clients
+ * 
+ * @param ws the server instance
+ * @param msg the message to send
+ * @param client the client to send the message to, or NULL to send to all clients
+ */
+void ws_send_message( ws_server_t *ws, ws_msg_t *msg, ws_client_t* client);
 
 
 #endif

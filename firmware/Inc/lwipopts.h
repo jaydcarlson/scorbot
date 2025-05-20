@@ -59,8 +59,6 @@
 #define LWIP_DNS 1
 /*----- Default Value for MEMP_NUM_TCP_PCB: 5 ---*/
 #define MEMP_NUM_TCP_PCB 10
-/*----- Default Value for MEMP_MEM_MALLOC: 0 ---*/
-#define MEMP_MEM_MALLOC 1
 /*----- Value in opt.h for MEM_ALIGNMENT: 1 -----*/
 #define MEM_ALIGNMENT 4
 /*----- Default Value for H7 devices: 0x30044000 -----*/
@@ -132,7 +130,7 @@
 /*----- Value in opt.h for CHECKSUM_CHECK_ICMP6: 1 -----*/
 #define CHECKSUM_CHECK_ICMP6 0
 /*----- Default Value for LWIP_DBG_MIN_LEVEL: LWIP_DBG_LEVEL_ALL ---*/
-#define LWIP_DBG_MIN_LEVEL LWIP_DBG_LEVEL_ALL
+#define LWIP_DBG_MIN_LEVEL LWIP_DBG_LEVEL_WARNING
 /*----- Default Value for ETHARP_DEBUG: LWIP_DBG_OFF ---*/
 #define ETHARP_DEBUG LWIP_DBG_ON
 /*----- Default Value for NETIF_DEBUG: LWIP_DBG_OFF ---*/
@@ -169,6 +167,9 @@
 #define CHECKSUM_CHECK_ICMP 0
 #undef LWIP_SUPPORT_CUSTOM_PBUF
 #undef LWIP_RAM_HEAP_POINTER
+
+#define TCP_QUEUE_OOSEQ 0
+
 /* USER CODE END 1 */
 
 #ifdef __cplusplus
