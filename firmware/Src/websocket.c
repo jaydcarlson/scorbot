@@ -1,9 +1,10 @@
 #include "websocket.h"
 #include "mbedtls.h"
 #include <string.h>
+  #include "lwip/tcp.h"
 
-const char *head_ws = "HTTP/1.1 101 Switching Protocols\n\
-Upgrade: websocket\n\
+const char *switching_protocols_header_ws = "HTTP/1.1 101 Switching Protocols\r\n\
+Upgrade: websocket\r\n\
 Connection: Upgrade\nSec-WebSocket-Accept: \0";
 
 static void ws_init_client_structs ( ws_server_t *ws );
@@ -30,11 +31,18 @@ void ws_server_task( void * arg )
   ws_server_t *ws = (ws_server_t*)arg;
   ws_client_t *new_client;
 
+  printf( "starting WebSocket server on port %d\n", WS_PORT);
+
   struct netconn *ws_con = netconn_new(NETCONN_TCP);
+
+  // ws_con->pcb.tcp->flags |= (TF_NODELAY | TF_ACK_NOW);
+
+
   if (ws_con == NULL)
     vTaskDelete(NULL);
   if (netconn_bind(ws_con, NULL, WS_PORT) != ERR_OK)
     vTaskDelete(NULL);
+  
   netconn_listen(ws_con);
 
 #if WS_USE_SDRAM == 1
@@ -49,10 +57,13 @@ void ws_server_task( void * arg )
     for (int iClient = 0; iClient < WS_MAX_CLIENTS; ++iClient)
     {
       new_client = &ws->ws_clients[iClient];
+      new_client->id = iClient;
       if (new_client->established == 0)
       {
+        printf("Client %d: calling netconn_accept()\n", iClient);
         if (netconn_accept(ws_con, &new_client->accepted_sock) == ERR_OK)
         {
+          printf("Client %d: netconn_accept() returned OK\n", iClient);
           // Resume the task that will handle the processing
           new_client->established = 1;
           vTaskResume(new_client->task_handle);
@@ -74,6 +85,8 @@ static void ws_init_client_structs( ws_server_t *ws )
   for (int i = 0; i < WS_MAX_CLIENTS; ++i)
   {
     client = &ws->ws_clients[i];
+    client->id = i;
+    printf("Initializing client %d\n", i);
     memset((void*)(client), 0x00, sizeof(ws_client_t));
     client->server_ptr = (void*)ws;
     xTaskCreate( ws_client_task, "ws_client", 256, (void*)client, 
@@ -91,16 +104,20 @@ static void ws_client_task( void * arg )
   uint16_t size_inbuf = 0;
   uint8_t *inbuf_ptr = NULL;
 
+  printf("Client %d: starting task\n", client->id);
+
   for (;;)
   {
     // The created task is in standby mode 
     // until an incoming connection unblocks it
+    printf( "Client %d: waiting for connection\n", client->id);
     vTaskSuspend(NULL);
 
     server_ptr->connected_clients_cnt++;
-
-    while (netconn_recv(client->accepted_sock, &inbuf) == ERR_OK)
+    err_t err;
+    while ((err = netconn_recv(client->accepted_sock, &inbuf)) == ERR_OK)
     {
+      printf( "Client %d: received message\n", client->id);
       memset(client->recv_buf, 0x00, WS_CLIENT_RECV_BUFFER_SIZE);
       netbuf_data(inbuf, (void**)&inbuf_ptr, &size_inbuf);
       memcpy(client->recv_buf, (void*)inbuf_ptr, size_inbuf);
@@ -109,34 +126,47 @@ static void ws_client_task( void * arg )
       // If is handshake
       if (strncmp((char*)inbuf_ptr, "GET /", 5) == 0)
       {
+        printf( "Client %d: handshake\n", client->id);
+        // First acknowledge the TCP packet
+        netconn_write(client->accepted_sock, NULL, 0, NETCONN_COPY);
+        
         char *ws_key_accept = create_ws_key_accept( (char*)inbuf_ptr );
-        sprintf((char*)server_ptr->send_buf, "%s%s%s", head_ws, 
+        sprintf((char*)server_ptr->send_buf, "%s%s%s", switching_protocols_header_ws, 
                                                    ws_key_accept, 
                                                    "\r\n\r\n");
+        // printf("send_buf: %s\n", server_ptr->send_buf);
         netconn_write( client->accepted_sock, 
                        server_ptr->send_buf, 
                        strlen((char*)server_ptr->send_buf), 
                        NETCONN_NOCOPY );
+        client->ws_connected = 1;
       }
       // If is a message
       else if ( (inbuf_ptr[0] & 0x80) == 0x80 )
       {
+        printf( "Client %d: message\n", client->id);
         uint32_t len = get_message_len( inbuf_ptr );
         uint8_t *payload = get_payload_ptr( inbuf_ptr );
         if (is_masked_msg( inbuf_ptr ) == 1)
         {
+          printf( "Client %d: masked message\n", client->id);
           uint8_t *mask = get_mask( inbuf_ptr );
           unmask_message_payload( payload, len, mask );
         }
-        server_ptr->msg_handler( payload, len, (ws_type_t)inbuf_ptr[0] );
+        server_ptr->msg_handler( client, payload, len, (ws_type_t)inbuf_ptr[0] );
       }
       netbuf_delete(inbuf);
     }
+
+    printf("Client %d: closing connection, error: %s\n", client->id, lwip_strerr(err));
+    client->ws_connected = 0;
     client->established = 0;
     server_ptr->connected_clients_cnt--;
     netconn_close(client->accepted_sock);
     netconn_delete(client->accepted_sock);
+    printf("Client %d: closed connection\n", client->id);
     osDelay(1000);
+    printf("Client %d: delayed 1000 ms\n", client->id);
   }
 }
 
@@ -211,13 +241,13 @@ static void unmask_message_payload( uint8_t *pld, uint32_t len, uint8_t *mask )
     pld[i] = mask[i%4] ^ pld[i];
 }
 
-void ws_send_message( ws_server_t *ws, ws_msg_t *msg )
+void ws_send_message( ws_server_t *ws, ws_msg_t *msg, ws_client_t* client)
 {
   uint8_t *outbuf_ptr = ws->send_buf;
   int packet_size = msg->prtcl_size + msg->msg_size;
-  ws_client_t *client;
+  
 
-  if (packet_size+7 < WS_SEND_BUFFER_SIZE)
+  if (packet_size+7 > WS_SEND_BUFFER_SIZE)
     return;
 
   memset(outbuf_ptr, 0x00, WS_SEND_BUFFER_SIZE);
@@ -227,19 +257,31 @@ void ws_send_message( ws_server_t *ws, ws_msg_t *msg )
   outbuf_ptr = ws_set_data_to_frame(msg->message, msg->msg_size, outbuf_ptr);
   packet_size = outbuf_ptr - ws->send_buf;
 
-  for (int iClient = 0; iClient < WS_MAX_CLIENTS; ++iClient)
+  if(client != NULL)
   {
-    client = &(ws->ws_clients[iClient]);
-    if (client->established == 1)
+      if (client->ws_connected == 1)
+      {
+        netconn_write( client->accepted_sock, 
+                      ws->send_buf, 
+                      packet_size, 
+                      NETCONN_NOCOPY );
+      }
+  } else {
+    for (int iClient = 0; iClient < WS_MAX_CLIENTS; ++iClient)
     {
-      netconn_write( client->accepted_sock, 
-                     ws->send_buf, 
-                     packet_size, 
-                     NETCONN_NOCOPY );
+      client = &(ws->ws_clients[iClient]);
+      if (client->ws_connected == 1)
+      {
+        printf("Broadcasting to client %d\n", client->id);
+        netconn_write( client->accepted_sock, 
+                      ws->send_buf, 
+                      packet_size, 
+                      NETCONN_NOCOPY );
+      }
     }
   }
-}
 
+}
 static uint8_t* ws_set_size_to_frame( uint32_t size, uint8_t *out_frame )
 {
   uint8_t *out_frame_ptr = out_frame;

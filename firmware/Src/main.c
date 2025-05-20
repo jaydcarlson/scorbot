@@ -27,7 +27,7 @@
 #include "lwip.h"
 #include "scorbot.h"
 #include "motor.h"
-#include "websocket.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -68,9 +68,8 @@ osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 
-ws_server_t ws_server = {
-  .connected_clients_cnt = 0
-};
+
+
 
 /* USER CODE END PV */
 
@@ -208,7 +207,7 @@ int main(void)
   defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
-  sys_thread_new("WS", ws_server_task, (void*)&ws_server, 1024, osPriorityNormal);
+
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
@@ -1035,52 +1034,52 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-void LwIP_DHCP_task() {
+// void LwIP_DHCP_task() {
 
-  uint32_t IPaddress;
+//   uint32_t IPaddress;
 
-  for (;;)
-  {
-    switch (DHCP_state)
-    {
-    case DHCP_START:
-      {
-        dhcp_start(&gnetif);
-        /* IP address should be setted to 0
-           everytime we want to assign a new DHVP address*/
-        IPaddress = 0;
-        DHCP_state = DHCP_WAIT_ADDRESS;
-      }
-      break;
+//   for (;;)
+//   {
+//     switch (DHCP_state)
+//     {
+//     case DHCP_START:
+//       {
+//         dhcp_start(&gnetif);
+//         /* IP address should be setted to 0
+//            everytime we want to assign a new DHVP address*/
+//         IPaddress = 0;
+//         DHCP_state = DHCP_WAIT_ADDRESS;
+//       }
+//       break;
 
-      case DHCP_WAIT_ADDRESS:
-      {
+//       case DHCP_WAIT_ADDRESS:
+//       {
 
-        /* Read the new IP address */
-        IPaddress = gnetif.ip_addr.addr;
+//         /* Read the new IP address */
+//         IPaddress = gnetif.ip_addr.addr;
 
-        if (IPaddress!=0)
-        {
-          DHCP_state = DHCP_ADDRESS_ASSIGNED;
+//         if (IPaddress!=0)
+//         {
+//           DHCP_state = DHCP_ADDRESS_ASSIGNED;
 
-          /* Stop DHCP */
-          dhcp_stop(&gnetif);
+//           /* Stop DHCP */
+//           dhcp_stop(&gnetif);
 
-        }
-        else
-        {
+//         }
+//         else
+//         {
 
-        }
-      }
-      break;
+//         }
+//       }
+//       break;
 
-      default: break;
-    }
+//       default: break;
+//     }
 
-    /* wait 250 ms */
-    vTaskDelay(250);
-  }
-}
+//     /* wait 250 ms */
+//     vTaskDelay(250);
+//   }
+// }
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
@@ -1096,7 +1095,11 @@ void StartDefaultTask(void const * argument)
   MX_USB_DEVICE_Init();
   /* USER CODE BEGIN 5 */
   MX_LWIP_Init();
-  Server_MainTask();
+  Scorbot_MainTask();
+  for(;;)
+  {
+    vTaskDelay(1000);
+  }
   /* USER CODE END 5 */
 }
 

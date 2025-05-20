@@ -207,6 +207,16 @@ int16_t motor_get_current_position(motor_t* motor)
 	return position;
 }
 
+float motor_get_current_velocity(motor_t* motor)
+{
+	return motor->current_velocity;
+}
+
+float motor_get_current_torque(motor_t* motor)
+{
+	return motor->current_torque;
+}
+
 void motor_init()
 {
 	///// ENABLE ENCODERS
@@ -280,6 +290,8 @@ void motor_control_loop()
 	{
 		motor_t* motor = &motors[i];
 		float error = motor->position_setpoint - motor_get_current_position(motor);
+
+		motor->current_velocity = error / 1000.0f;
 
 		if(motor->control_mode != MOTOR_CONTROL_MODE_POSITION)
 			return; // if we're homing or whatever, don't run the loop

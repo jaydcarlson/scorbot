@@ -4,8 +4,11 @@
 
 #define HOMING_SPEED (1.0f)
 
+#define JOINT_DEBUG
+
 joint_t joints[NUM_JOINTS] = {
     {
+        .name = "shoulder_pan",
         .primary_motor = &motors[0],
         .ms_port = MS1_GPIO_Port,
         .ms_pin = MS1_Pin,
@@ -14,6 +17,7 @@ joint_t joints[NUM_JOINTS] = {
         .min_angle = -130.0f
     },
     {
+        .name = "shoulder_lift",
         .primary_motor = &motors[1],
         .ms_port = MS2_GPIO_Port,
         .ms_pin = MS2_Pin,
@@ -22,6 +26,7 @@ joint_t joints[NUM_JOINTS] = {
         .min_angle = 0.0f
     },
     {
+        .name = "elbow",
         .primary_motor = &motors[2],
         .ms_port = MS3_GPIO_Port,
         .ms_pin = MS3_Pin,
@@ -30,6 +35,7 @@ joint_t joints[NUM_JOINTS] = {
         .min_angle = -130.0f
     },
     {
+        .name = "wrist_1",
         .primary_motor = &motors[4],
         .coupled_motor = &motors[3],
         .coupling_factor = -1.0f,
@@ -40,6 +46,7 @@ joint_t joints[NUM_JOINTS] = {
         .min_angle = -INFINITY
     },
     {
+        .name = "wrist_2",
         .primary_motor = &motors[3],
         .coupled_motor = &motors[4],
         .coupling_factor = 1.0f,
@@ -50,6 +57,7 @@ joint_t joints[NUM_JOINTS] = {
         .min_angle = -INFINITY
     },
     {
+        .name = "gripper",
         .primary_motor = &motors[5],
         .ms_port = MS6_GPIO_Port,
         .ms_pin = MS6_Pin,
@@ -65,7 +73,10 @@ void joint_home(joint_t* joint)
     // since for coupled motors, we're going to get drift since our "speed controller" is just a PWM signal
     // save previous control mode
     motor_control_mode_t previous_control_mode = joint->primary_motor->control_mode;
-    motor_control_mode_t previous_coupled_control_mode = joint->coupled_motor->control_mode;
+    motor_control_mode_t previous_coupled_control_mode;
+    if(joint->coupled_motor != NULL) {
+        previous_coupled_control_mode = joint->coupled_motor->control_mode;
+    }
 
     motor_set_control_mode(joint->primary_motor, MOTOR_CONTROL_MODE_PWM);
     motor_set_pwm(joint->primary_motor, -HOMING_SPEED);
@@ -96,6 +107,8 @@ void joint_home(joint_t* joint)
 
 void joint_set_angle(joint_t* joint, float angle)
 {
+    printf("Setting angle for %s to %f\n", joint->name, angle);
+    motor_set_control_mode(joint->primary_motor, MOTOR_CONTROL_MODE_POSITION);
     // clip angle to max and min
     angle = fmin(angle, joint->max_angle);
     angle = fmax(angle, joint->min_angle);
@@ -106,3 +119,71 @@ void joint_set_angle(joint_t* joint, float angle)
     }
 }
 
+void joint_set_velocity(joint_t* joint, float velocity)
+{
+    motor_set_control_mode(joint->primary_motor, MOTOR_CONTROL_MODE_PWM);
+    motor_set_pwm(joint->primary_motor, velocity * joint->gear_ratio);
+    if(joint->coupled_motor != NULL) {
+        motor_set_control_mode(joint->coupled_motor, MOTOR_CONTROL_MODE_PWM);
+        motor_set_pwm(joint->coupled_motor, velocity * joint->gear_ratio * joint->coupling_factor);
+    }
+}
+
+void joint_set_torque(joint_t* joint, float torque)
+{
+    
+    
+}
+
+void joint_set_passive(joint_t* joint)
+{
+    motor_set_control_mode(joint->primary_motor, MOTOR_CONTROL_MODE_OFF);
+    if(joint->coupled_motor != NULL)
+    {
+        motor_set_control_mode(joint->coupled_motor, MOTOR_CONTROL_MODE_OFF);
+    }
+}
+
+void joint_execute_cmd(joint_t* joint, joint_cmd_t* cmd)
+{
+    switch(cmd->opcode) {
+        case JOINT_CMD_SET_ANGLE:
+            joint_set_angle(joint, cmd->value);
+            break;
+        case JOINT_CMD_SET_VELOCITY:
+            joint_set_velocity(joint, cmd->value);
+            break;
+        case JOINT_CMD_SET_TORQUE:
+            joint_set_torque(joint, cmd->value);
+            break;
+        case JOINT_CMD_SET_PASSIVE:
+            joint_set_passive(joint);
+            break;
+        case JOINT_CMD_HOME:
+            joint_home(joint);
+            break;
+        default:
+            break;
+    }
+}   
+
+void joint_get_status(joint_t* joint, joint_status_t* status)
+{
+    // read the angle
+    status->angle = motor_get_current_position(joint->primary_motor) / joint->gear_ratio;
+    if(joint->coupled_motor != NULL) {
+        status->angle += (motor_get_current_position(joint->coupled_motor) - joint->coupling_offset) / (joint->gear_ratio * joint->coupling_factor);
+    }
+
+    // read the velocity
+    status->velocity = motor_get_current_velocity(joint->primary_motor) / joint->gear_ratio;
+    if(joint->coupled_motor != NULL) {
+        status->velocity += motor_get_current_velocity(joint->coupled_motor) / (joint->gear_ratio * joint->coupling_factor);
+    }
+
+    // read the torque
+    status->torque = motor_get_current_torque(joint->primary_motor);
+    if(joint->coupled_motor != NULL) {
+        status->torque += motor_get_current_torque(joint->coupled_motor);
+    }
+}

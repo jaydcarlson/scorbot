@@ -10,7 +10,8 @@
         "runToEntryPoint": "main",
         "showDevDebugOutput": "none",
         "servertype": "jlink",
-        "preLaunchTask": "Build"
+        "preLaunchTask": "Build",
+        "rtos": "FreeRTOS"
     }
     ]
 }

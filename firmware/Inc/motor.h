@@ -24,6 +24,9 @@ typedef struct motor {
 	volatile GPIO_TypeDef* a_port;
 	volatile GPIO_TypeDef* b_port;
 	volatile int16_t* current_position;
+	int16_t last_position;
+	float current_velocity;
+	float current_torque;
 	int32_t position_setpoint;
 	uint16_t a_pin;
 	uint16_t b_pin;
@@ -45,4 +48,8 @@ void motor_set_pwm(motor_t* motor, float pwm);
 void motor_set_control_mode(motor_t* motor, motor_control_mode_t control_mode);
 int16_t motor_get_current_position(motor_t* motor);
 void motor_set_encoder_value(motor_t* motor, int16_t new_position);
+
+float motor_get_current_velocity(motor_t* motor);
+float motor_get_current_torque(motor_t* motor);
+
 #endif /* MOTOR_H_ */

@@ -47,7 +47,7 @@
  *                  integer from.
  */
 #define GET_UINT32_BE(data, offset)                                \
-    __builtin_bswap32((data) + (offset))
+    __builtin_bswap32(*((uint32_t*) (data + offset)))
 
 /**
  * Put in memory a 32 bits unsigned integer in big-endian order.
@@ -59,7 +59,7 @@
  *                  byte of the 32 bits unsigned integer \p n.
  */
 #define PUT_UINT32_BE(n, data, offset)                                   \
-    *(data + offset) = __builtin_bswap32((uint32_t) (n));
+    *((uint32_t*)(data + offset)) = __builtin_bswap32((uint32_t) (n));
 
 void mbedtls_sha1_init(mbedtls_sha1_context *ctx)
 {
