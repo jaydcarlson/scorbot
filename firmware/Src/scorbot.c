@@ -15,6 +15,7 @@
 #include "joint.h"
 
 #include "websocket.h"
+#include "hololink.h"
 
 void msg_handler( ws_client_t* client, uint8_t *data, uint32_t len, ws_type_t type );
 
@@ -72,14 +73,16 @@ void broadcast_status()
   ws_send_message(&ws_server, &msg, NULL);
 }
 
+
 void Scorbot_MainTask()
 {
+  sys_thread_new("Hololink", hololink_task, NULL, 1024, osPriorityNormal);
   sys_thread_new("WS", ws_server_task, (void*)&ws_server, 1024, osPriorityNormal);
   int i = 0;
   for(;;)
   {
-    printf("Broadcasting status %d\n", i++);
-    broadcast_status();
+    // printf("Broadcasting status %d\n", i++);
+    // broadcast_status();
     vTaskDelay(100);
   }
 }
