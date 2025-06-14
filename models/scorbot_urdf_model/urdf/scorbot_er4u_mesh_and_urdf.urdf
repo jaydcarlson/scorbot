@@ -1,0 +1,569 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="scorbot_er4u_mesh_and_urdf">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="-0.00016017 0.00027743 0.090431"
+        rpy="0 0 0" />
+      <mass
+        value="5.1894" />
+      <inertia
+        ixx="0.02933"
+        ixy="-6.5894E-05"
+        ixz="-7.1468E-05"
+        iyy="0.029406"
+        iyz="0.00012379"
+        izz="0.023038" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://scorbot_er4u_mesh_and_urdf/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://scorbot_er4u_mesh_and_urdf/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="shoulder">
+    <inertial>
+      <origin
+        xyz="0.00799935706662509 0.0716689468156619 0.0065021547736188"
+        rpy="0 0 0" />
+      <mass
+        value="1.71243232094245" />
+      <inertia
+        ixx="0.00253667125917515"
+        ixy="5.33015957394309E-06"
+        ixz="-6.15883660515544E-06"
+        iyy="0.00346391401825662"
+        iyz="4.53143594502608E-05"
+        izz="0.00263678029911136" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://scorbot_er4u_mesh_and_urdf/meshes/shoulder.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://scorbot_er4u_mesh_and_urdf/meshes/shoulder.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="j1"
+    type="revolute">
+    <origin
+      xyz="0 0 0.2035"
+      rpy="1.5707963267949 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="shoulder" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-155"
+      upper="155"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="link2">
+    <inertial>
+      <origin
+        xyz="-0.00149978684268147 0.0491674781738463 0.121546334405147"
+        rpy="0 0 0" />
+      <mass
+        value="0.13907465828287" />
+      <inertia
+        ixx="0.000705197409920323"
+        ixy="-2.85322371189166E-09"
+        ixz="-1.30628027859479E-08"
+        iyy="0.000609449635828272"
+        iyz="-0.000215930113740886"
+        izz="0.00016366782701836" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://scorbot_er4u_mesh_and_urdf/meshes/link2.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://scorbot_er4u_mesh_and_urdf/meshes/link2.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="j2"
+    type="revolute">
+    <origin
+      xyz="0 0.148 0.015814"
+      rpy="-1.1861 0 0" />
+    <parent
+      link="shoulder" />
+    <child
+      link="link2" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-35"
+      upper="130"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="link3">
+    <inertial>
+      <origin
+        xyz="-0.00161140925205583 -0.0653393953221578 0.089134154038203"
+        rpy="0 0 0" />
+      <mass
+        value="0.134522448345309" />
+      <inertia
+        ixx="0.000725362267539187"
+        ixy="-2.21957210470906E-08"
+        ixz="4.37665536359324E-08"
+        iyy="0.000787599694172007"
+        iyz="0.000313843711979311"
+        izz="0.00077136385456754" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://scorbot_er4u_mesh_and_urdf/meshes/link3.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://scorbot_er4u_mesh_and_urdf/meshes/link3.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="j3"
+    type="revolute">
+    <origin
+      xyz="0 0.083319 0.20577"
+      rpy="-1.0758 0 0" />
+    <parent
+      link="link2" />
+    <child
+      link="link3" />
+    <axis
+      xyz="1 0 0" />
+    <limit
+      lower="-130"
+      upper="130"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="wrist_pitch">
+    <inertial>
+      <origin
+        xyz="-0.00150003286811627 0.333739798462262 0.398404504559236"
+        rpy="0 0 0" />
+      <mass
+        value="0.204374014246953" />
+      <inertia
+        ixx="6.11183155896937E-05"
+        ixy="-2.16956947813519E-12"
+        ixz="1.32110954242711E-11"
+        iyy="5.64540201198786E-05"
+        iyz="-1.79410437364399E-06"
+        izz="6.67639365103607E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://scorbot_er4u_mesh_and_urdf/meshes/wrist_pitch.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://scorbot_er4u_mesh_and_urdf/meshes/wrist_pitch.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="j4"
+    type="fixed">
+    <origin
+      xyz="0 -0.6282 0.22877"
+      rpy="-1.0472 0 0" />
+    <parent
+      link="link3" />
+    <child
+      link="wrist_pitch" />
+    <axis
+      xyz="0 0 0" />
+    <limit
+      lower="-130"
+      upper="130"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="wrist_roll">
+    <inertial>
+      <origin
+        xyz="-2.8807E-08 0.01672 -0.00060103"
+        rpy="0 0 0" />
+      <mass
+        value="0.03322" />
+      <inertia
+        ixx="1.1527E-05"
+        ixy="1.6124E-11"
+        ixz="2.3181E-11"
+        iyy="1.8187E-05"
+        iyz="-6.5335E-08"
+        izz="2.3651E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://scorbot_er4u_mesh_and_urdf/meshes/wrist_roll.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://scorbot_er4u_mesh_and_urdf/meshes/wrist_roll.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="j5"
+    type="continuous">
+    <origin
+      xyz="-0.0015000000000021 0.21444583740546 0.379318079320239"
+      rpy="2.974130834029 0 3.14159265358979" />
+    <parent
+      link="wrist_pitch" />
+    <child
+      link="wrist_roll" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-130"
+      upper="130"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="tool_right">
+    <inertial>
+      <origin
+        xyz="0.0229999999999939 -1.76941794549634E-16 -0.00650000000000003"
+        rpy="0 0 0" />
+      <mass
+        value="0.0109316017944005" />
+      <inertia
+        ixx="1.84434457629354E-07"
+        ixy="2.02374526996411E-20"
+        ixz="-2.18646564223463E-22"
+        iyy="2.76898790125655E-06"
+        iyz="-7.12140169843449E-24"
+        izz="2.7667468068672E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://scorbot_er4u_mesh_and_urdf/meshes/tool_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://scorbot_er4u_mesh_and_urdf/meshes/tool_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="j6_r"
+    type="revolute">
+    <origin
+      xyz="-0.032 0.0085 0"
+      rpy="-1.5708 0 -1.5708" />
+    <parent
+      link="wrist_roll" />
+    <child
+      link="tool_right" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-45"
+      upper="45"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="tip_right">
+    <inertial>
+      <origin
+        xyz="0.0036727 0.017661 -0.005"
+        rpy="0 0 0" />
+      <mass
+        value="0.0045442" />
+      <inertia
+        ixx="4.5817E-07"
+        ixy="1.2647E-07"
+        ixz="2.6565E-23"
+        iyy="3.0432E-07"
+        iyz="-2.6934E-23"
+        izz="5.0472E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://scorbot_er4u_mesh_and_urdf/meshes/tip_right.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.50196 0.50196 0.50196 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://scorbot_er4u_mesh_and_urdf/meshes/tip_right.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="j7_r"
+    type="fixed">
+    <origin
+      xyz="0.0420000000000128 -0.00499999999999319 0.00350000000032195"
+      rpy="1.5707963267949 1.5707963267949 0" />
+    <parent
+      link="tool_right" />
+    <child
+      link="tip_right" />
+    <axis
+      xyz="0 0 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="tool_left">
+    <inertial>
+      <origin
+        xyz="0.0229999999999939 -1.73472347597681E-16 0.00650000000000003"
+        rpy="0 0 0" />
+      <mass
+        value="0.0109316017944005" />
+      <inertia
+        ixx="1.84434457629354E-07"
+        ixy="2.05734992375707E-20"
+        ixz="3.38011947262265E-22"
+        iyy="2.76898790125654E-06"
+        iyz="2.05006607701497E-23"
+        izz="2.7667468068672E-06" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://scorbot_er4u_mesh_and_urdf/meshes/tool_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.792156862745098 0.819607843137255 0.933333333333333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://scorbot_er4u_mesh_and_urdf/meshes/tool_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="j6_l"
+    type="revolute">
+    <origin
+      xyz="0.0320000000000329 0.0085000000000004 0"
+      rpy="-1.5707963267949 0 -1.57079632679548" />
+    <parent
+      link="wrist_roll" />
+    <child
+      link="tool_left" />
+    <axis
+      xyz="0 1 0" />
+    <limit
+      lower="-45"
+      upper="45"
+      effort="0"
+      velocity="0" />
+  </joint>
+  <link
+    name="tip_left">
+    <inertial>
+      <origin
+        xyz="0.00367269052710108 0.017660866085392 -0.00499999999999999"
+        rpy="0 0 0" />
+      <mass
+        value="0.00454420794860012" />
+      <inertia
+        ixx="4.58166498573772E-07"
+        ixy="1.26469725965748E-07"
+        ixz="1.52250858587451E-23"
+        iyy="3.04318268818379E-07"
+        iyz="2.01495233866649E-22"
+        izz="5.04715794044642E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://scorbot_er4u_mesh_and_urdf/meshes/tip_left.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.501960784313725 0.501960784313725 0.501960784313725 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://scorbot_er4u_mesh_and_urdf/meshes/tip_left.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="j7_l"
+    type="fixed">
+    <origin
+      xyz="0.0420000000000023 0.005 -0.00350000000001019"
+      rpy="1.57079632679489 -1.5707963267949 0" />
+    <parent
+      link="tool_left" />
+    <child
+      link="tip_left" />
+    <axis
+      xyz="0 0 0" />
+    <limit
+      lower="0"
+      upper="0"
+      effort="0"
+      velocity="0" />
+  </joint>
+</robot>
