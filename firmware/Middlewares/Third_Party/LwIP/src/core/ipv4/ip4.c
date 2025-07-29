@@ -104,7 +104,7 @@
 #endif /* LWIP_DHCP */
 
 /** The IP header ID of the next outgoing IP packet */
-static u16_t ip_id;
+u16_t ip_id;
 
 #if LWIP_MULTICAST_TX_OPTIONS
 /** The default netif used for multicast */
@@ -842,7 +842,7 @@ ip4_output_if_opt_src(struct pbuf *p, const ip4_addr_t *src, const ip4_addr_t *d
                       u16_t optlen)
 {
 #endif /* IP_OPTIONS_SEND */
-  struct ip_hdr *iphdr;
+  volatile struct ip_hdr *iphdr;
   ip4_addr_t dest_addr;
 #if CHECKSUM_GEN_IP_INLINE
   u32_t chk_sum = 0;

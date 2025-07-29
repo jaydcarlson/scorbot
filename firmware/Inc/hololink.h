@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "lwip/api.h"
+#include "lwip/prot/udp.h"
+#include "lwip/prot/ip4.h"
 
 // we're on LE, so we need to swap the bytes
 #define ntohl(x) __builtin_bswap32(x)
@@ -45,6 +47,7 @@ typedef struct __attribute__((packed)) {
 
 
 
+
 typedef struct __attribute__((packed)) {
     uint8_t op_code;
     uint8_t flags;
@@ -57,18 +60,25 @@ typedef struct __attribute__((packed)) {
     uint32_t imm_data;
     uint8_t payload[100];
     uint32_t crc32;
-} hololink_packet_t;
+} rocev2_packet;
 
+
+typedef struct __attribute__((packed)) {
+    struct ip_hdr iphdr;
+    struct udp_hdr udphdr;
+    rocev2_packet data;
+} data_packet;
 
 typedef struct {
      struct netconn *enumerator;
      struct netconn *control;
+     struct netconn *data;
      uint8_t enumeration_packet[sizeof(bootp_request_t)];
      uint8_t control_recv_buf[1024];
      uint16_t host_port;
      ip_addr_t host_ip;
      bool streaming_enabled;
-     hololink_packet_t packet;
+     data_packet packet;
 } hololink_client_t;
 
 // constexpr uint32_t HOLOLINK_LITE_BOARD_ID = 2u;

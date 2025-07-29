@@ -38,6 +38,7 @@ BUILD_DIR = build
 C_SOURCES =  \
 Src/main.c \
 Src/hololink.c \
+Src/crc32.c \
 Src/motor.c \
 Src/joint.c \
 Src/scorbot.c \

@@ -11,6 +11,7 @@
         "showDevDebugOutput": "none",
         "servertype": "jlink",
         "preLaunchTask": "Build",
+        "gdbPath": "gdb-multiarch",
         "rtos": "FreeRTOS"
     }
     ]
