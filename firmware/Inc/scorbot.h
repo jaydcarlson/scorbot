@@ -11,23 +11,12 @@
 #include "motor.h"
 #include "joint.h"
 
-typedef struct __attribute__((packed)) {
-    joint_cmd_t shoulder_pan;
-    joint_cmd_t shoulder_lift;
-    joint_cmd_t elbow;
-    joint_cmd_t wrist_1;
-    joint_cmd_t wrist_2;
-    joint_cmd_t gripper;
-} scorbot_cmd_t;
-
-typedef struct __attribute__((packed)) {
-    joint_status_t shoulder_pan;
-    joint_status_t shoulder_lift;
-    joint_status_t elbow;
-    joint_status_t wrist_1;
-    joint_status_t wrist_2;
-    joint_status_t gripper;
-} scorbot_status_t;
+/*
+ * The fixed six-joint WebSocket command and status structs that used to live
+ * here are gone. scorbot_pose_t and scorbot_state_t in scorbot_proto.h replace
+ * them: eight joint slots, per-joint modes, sequence numbers and echo fields,
+ * and one definition shared with the host rather than two that could drift.
+ */
 
 void Scorbot_MainTask();
 

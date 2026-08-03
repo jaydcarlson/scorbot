@@ -9,81 +9,69 @@
 // #include "mqtt_opts.h"
 // #include "lwip/apps/mqtt.h"
 #include "lwip/api.h"
+#include "lwip/netif.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include "joint.h"
 
-#include "websocket.h"
+/* websocket.h: legacy transport, no longer part of the control path */
 #include "hololink.h"
+#include "homing.h"
+#include "scorbot_ctrl.h"
+#include "scorbot_udp.h"
 
-void msg_handler( ws_client_t* client, uint8_t *data, uint32_t len, ws_type_t type );
+/* The pre-UDP transports still build, but are off unless explicitly enabled. */
+#ifndef SCORBOT_ENABLE_LEGACY_TRANSPORTS
+#define SCORBOT_ENABLE_LEGACY_TRANSPORTS 0
+#endif
 
-ws_server_t ws_server = {
-  .connected_clients_cnt = 0,
-  .msg_handler = msg_handler
-};
-
-void msg_handler( ws_client_t* client, uint8_t *data, uint32_t len, ws_type_t type )
-{
-  printf("got message from client %d, type %s, %s\n", client->id, type == WS_TYPE_STRING ? "string" : "binary", data);
-
-  // execute the commands
-  scorbot_cmd_t* cmd = (scorbot_cmd_t*)data;
-  joint_execute_cmd(&joints[0], &cmd->shoulder_pan);
-  joint_execute_cmd(&joints[1], &cmd->shoulder_lift);
-  joint_execute_cmd(&joints[2], &cmd->elbow);
-  joint_execute_cmd(&joints[3], &cmd->wrist_1);
-  joint_execute_cmd(&joints[4], &cmd->wrist_2);
-  joint_execute_cmd(&joints[5], &cmd->gripper);
-
-  // scorbot_status_t status;
-  // joint_get_status(&joints[0], &status.shoulder_pan);
-  // joint_get_status(&joints[1], &status.shoulder_lift);
-  // joint_get_status(&joints[2], &status.elbow);
-  // joint_get_status(&joints[3], &status.wrist_1);
-  // joint_get_status(&joints[4], &status.wrist_2);
-  // joint_get_status(&joints[5], &status.gripper);
-
-  // ws_msg_t msg = {
-  //   .msg_type = WS_TYPE_BINARY,
-  //   .message = (uint8_t*)&status,
-  //   .msg_size = sizeof(scorbot_status_t)
-  // };
-
-  // ws_send_message(&ws_server, &msg, client);
-}
-
-void broadcast_status()
-{
-  scorbot_status_t status;
-  joint_get_status(&joints[0], &status.shoulder_pan);
-  joint_get_status(&joints[1], &status.shoulder_lift);
-  joint_get_status(&joints[2], &status.elbow);
-  joint_get_status(&joints[3], &status.wrist_1);
-  joint_get_status(&joints[4], &status.wrist_2);
-  joint_get_status(&joints[5], &status.gripper);
-
-  ws_msg_t msg = {
-    .msg_type = WS_TYPE_BINARY,
-    .message = (uint8_t*)&status,
-    .msg_size = sizeof(scorbot_status_t)
-  };
-
-  ws_send_message(&ws_server, &msg, NULL);
-}
-
+extern struct netif gnetif;
 
 void Scorbot_MainTask()
 {
+  printf("scorbot: init joints\r\n");
+  joint_init();
+  printf("scorbot: init homing\r\n");
+  homing_init();
+  printf("scorbot: init data plane\r\n");
+  scorbot_udp_init();
+  printf("scorbot: init control plane\r\n");
+  scorbot_ctrl_init();
+
+  /*
+   * All three run at osPriorityNormal, the same priority as the LwIP TCP/IP
+   * thread (TCPIP_THREAD_PRIO in lwipopts.h).
+   *
+   * Putting them above it is tempting for latency but is a trap: these tasks
+   * are fed by the TCP/IP thread, so any stall or spin in them starves the very
+   * thread that would deliver their next packet, and the DHCP timers along with
+   * it. The Ethernet receive thread sits at osPriorityRealtime and still
+   * preempts everything, so incoming frames are never delayed by this.
+   */
+  sys_thread_t rx = sys_thread_new("ScorbotRx", (lwip_thread_fn)scorbot_udp_rx_task, NULL, 512,
+                                   osPriorityNormal);
+  sys_thread_t tx = sys_thread_new("ScorbotTx", (lwip_thread_fn)scorbot_udp_tx_task, NULL, 512,
+                                   osPriorityNormal);
+  sys_thread_t ct = sys_thread_new("ScorbotCtl", (lwip_thread_fn)scorbot_ctrl_task, NULL, 512,
+                                   osPriorityNormal);
+  printf("scorbot: free heap %u\r\n", (unsigned)xPortGetFreeHeapSize());
+
+#if SCORBOT_ENABLE_LEGACY_TRANSPORTS
+  /* Hololink predates the UDP protocol and is kept so the Holoscan sensor
+   * bridge tooling still has something to talk to. */
   sys_thread_new("Hololink", hololink_task, NULL, 1024, osPriorityNormal);
-  sys_thread_new("WS", ws_server_task, (void*)&ws_server, 1024, osPriorityNormal);
-  int i = 0;
+#endif
+
   for(;;)
   {
-    // printf("Broadcasting status %d\n", i++);
-    // broadcast_status();
-    vTaskDelay(100);
+    const uint32_t ip = gnetif.ip_addr.addr;
+    printf("scorbot: netif flags=0x%02x ip=%u.%u.%u.%u heap=%u\r\n",
+           gnetif.flags,
+           (unsigned)(ip & 0xFF), (unsigned)((ip >> 8) & 0xFF),
+           (unsigned)((ip >> 16) & 0xFF), (unsigned)((ip >> 24) & 0xFF),
+           (unsigned)xPortGetFreeHeapSize());
+    vTaskDelay(2000);
   }
 }
 	// xTaskCreate(update_positions, "update_positions", 1024, NULL, 0, NULL);

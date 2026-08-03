@@ -41,6 +41,9 @@ Src/hololink.c \
 Src/crc32.c \
 Src/motor.c \
 Src/joint.c \
+Src/homing.c \
+Src/scorbot_udp.c \
+Src/scorbot_ctrl.c \
 Src/scorbot.c \
 Src/websocket.c \
 Src/sha1.c \

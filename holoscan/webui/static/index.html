@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Scorbot ER-4u</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>Scorbot ER-4u</h1>
+    <div class="sub" id="subtitle">connecting&hellip;</div>
+  </div>
+  <button id="estop" class="estop" type="button">E-STOP</button>
+</header>
+
+<div id="banner" class="banner hidden"></div>
+
+<main>
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Joints</h2>
+      <div class="head-actions">
+        <button class="btn" data-mode-all="1" type="button">Hold all</button>
+        <button class="btn" data-mode-all="0" type="button">Idle all</button>
+      </div>
+    </div>
+    <div id="joints" class="joints"></div>
+  </section>
+
+  <aside class="side">
+    <section class="panel">
+      <div class="panel-head"><h2>Homing</h2></div>
+      <div class="pad">
+        <p class="note">
+          Runs gripper, wrist roll, wrist pitch, elbow, shoulder lift, then
+          shoulder pan. The two wrist axes go one after the other because they
+          share both motors. Each switch marks that joint's zero. Keep a hand on
+          the e-stop.
+        </p>
+        <div class="row">
+          <button id="home-all" class="btn primary" type="button">Home all joints</button>
+        </div>
+        <div class="row">
+          <select id="home-joint-select"></select>
+          <button id="home-one" class="btn" type="button">Home one</button>
+        </div>
+        <div id="homing-status" class="homing-status">idle</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h2>PID tuning</h2></div>
+      <div class="pad">
+        <select id="gain-joint"></select>
+        <div class="gain-grid">
+          <label>kp<input id="gain-kp" type="number" step="0.001" value="0"></label>
+          <label>ki<input id="gain-ki" type="number" step="0.001" value="0"></label>
+          <label>kd<input id="gain-kd" type="number" step="0.001" value="0"></label>
+        </div>
+        <div class="row">
+          <button id="gain-read" class="btn" type="button">Read</button>
+          <button id="gain-write" class="btn primary" type="button">Apply</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h2>Link</h2></div>
+      <div class="pad">
+        <dl class="stats">
+          <dt>Transport</dt><dd id="stat-transport">&mdash;</dd>
+          <dt>Session</dt><dd id="stat-session">&mdash;</dd>
+          <dt>Round trip</dt><dd id="stat-rtt">&mdash;</dd>
+          <dt>Sent</dt><dd id="stat-sent">0</dd>
+          <dt>Received</dt><dd id="stat-recv">0</dd>
+          <dt>Dropped</dt><dd id="stat-dropped">0</dd>
+          <dt>Malformed</dt><dd id="stat-bad">0</dd>
+        </dl>
+      </div>
+    </section>
+  </aside>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
